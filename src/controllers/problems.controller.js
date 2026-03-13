@@ -56,7 +56,8 @@ export const createProblem = async (req, res) => {
             }
         }
 
-         const newProblem = await prisma.problem.create({
+        const newProblem = await prisma.problem.create({
+            data: {  
                 title,
                 description,
                 difficulty,
@@ -67,17 +68,19 @@ export const createProblem = async (req, res) => {
                 editorial,
                 testCases,
                 codeSnippets,
-                userId : req.user.id
-            })
+                referenceSolutions,
+                userId: req.user.id
+            }
+        })
 
-            res.status(201).json({
-                success : true ,
-                message : "Problem created successfully",
-                problem : newProblem
-            })
+        res.status(201).json({
+            success: true,
+            message: "Problem created successfully",
+            problem: newProblem
+        })
 
     } catch (error) {
-        console.error('Error creating problem ' , error)
-        res.status(500).json({error : "Failed to create problem"})
+        console.error('Error creating problem ', error)
+        res.status(500).json({ error: "Failed to create problem" })
     }
 }
