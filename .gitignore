@@ -1,0 +1,21 @@
+# Ignore compiled output
+*.o
+*.pyc
+/bin/
+/target/
+
+
+# Ignore dependency directories
+node_modules/
+vendor/
+/.env
+
+# Ignore log files
+*.log
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore sensitive information
+secrets.txt
