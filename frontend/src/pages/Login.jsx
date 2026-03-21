@@ -1,6 +1,7 @@
 import React from 'react'
 import Navbar from '../Components/Navbar'
 import leetcodeLoginLogo from "../assets/leetcodeLoginLogo.svg"
+import Footer from '../Components/Footer'
 
 const Login = () => {
   return (
@@ -49,6 +50,7 @@ const Login = () => {
         </div>
 
       </div>
+      <Footer />
     </div>
   )
 }
