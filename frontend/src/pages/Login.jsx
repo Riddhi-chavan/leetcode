@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Navbar from '../Components/Navbar'
 import leetcodeLoginLogo from "../assets/leetcodeLoginLogo.svg"
 import Footer from '../Components/Footer'
+import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
+  const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
   return (
     <div className='bg-[#eceff1] h-screen w-screen flex flex-col'>
       <Navbar />
@@ -13,15 +16,27 @@ const Login = () => {
           <div className='flex flex-col gap-[20px] w-full'>
             <input
               type="text"
-              className='w-full border-[1px] border-[#cfd8dc] h-[40px] p-[10px] outline-none rounded-[3px] transition-colors duration-150 hover:border-black focus:border-[#fbc02e] text-[14px]'
+              className='w-full border-[1px] border-[#cfd8dc] h-[40px] p-[10px] outline-none rounded-[3px] transition-colors duration-150 hover:border-black focus:border-[#fbc02e] text-[14px] placeholder:text-[#bdbdbd]'
               style={{ '--tw-ring-color': 'transparent' }}
               placeholder='Username or E-mail'
             />
-            <input
-              type="text"
-              className='w-full border-[1px] border-[#cfd8dc] h-[40px] p-[10px] outline-none rounded-[3px] transition-colors duration-150 hover:border-black focus:border-[#fbc02e] text-[14px]'
-              placeholder='Password'
-            />
+            <div className='w-full border-[1px] border-[#cfd8dc] h-[40px] p-[10px] outline-none rounded-[3px] transition-colors duration-150 hover:border-black focus:border-[#fbc02e] text-[14px] flex items-center'>
+              <input
+                type={showPassword ? "text" : "password"}
+                className='placeholder:text-[#bdbdbd] w-full outline-none'
+                placeholder='Password'
+              />
+              {showPassword ? (
+                <svg onClick={() => setShowPassword(false)} className="cursor-pointer" viewBox="0 0 24 24" width="1em" height="1em">
+                  <path fill-rule="evenodd" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                </svg>
+              ) : (
+                <svg onClick={() => setShowPassword(true)} className="cursor-pointer" viewBox="0 0 24 24" width="1em" height="1em">
+                  <path fill-rule="evenodd" d="M7.119 14.563L5.982 16.53l-1.732-1 1.301-2.253A8.97 8.97 0 0 1 3 7h2a7 7 0 0 0 14 0h2a8.973 8.973 0 0 1-2.72 6.448l1.202 2.083-1.732 1-1.065-1.845A8.944 8.944 0 0 1 13 15.946V18h-2v-2.055a8.946 8.946 0 0 1-3.881-1.382z" />
+                </svg>
+              )}
+
+            </div>
           </div>
           <button className='mt-[25px] bg-gradient-to-br from-[#546e7a] to-[#37474f] w-full h-[40px] text-[#fff] text-[14px] rounded-[3px] cursor-pointer'>
             Sign in
@@ -30,7 +45,7 @@ const Login = () => {
             <div className='cursor-pointer'>
               Forgot Password?
             </div>
-            <div className='cursor-pointer'>
+            <div className='cursor-pointer' onClick={() => navigate('/accounts/register/')}>
               Sign Up
             </div>
           </div>
