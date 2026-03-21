@@ -22,7 +22,7 @@ const Login = () => {
               placeholder='Password'
             />
           </div>
-          <button className='mt-[25px] bg-gradient-to-br from-[#546e7a] to-[#37474f] w-full h-[40px] text-[#fff] text-[14px] rounded-[3px]'>
+          <button className='mt-[25px] bg-gradient-to-br from-[#546e7a] to-[#37474f] w-full h-[40px] text-[#fff] text-[14px] rounded-[3px] cursor-pointer'>
             Sign in
           </button>
           <div className='flex justify-between w-full mt-[20px] text-[#546e7a] text-[14px]'>
