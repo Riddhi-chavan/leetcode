@@ -3,10 +3,35 @@ import Navbar from '../Components/Navbar'
 import leetcodeLoginLogo from "../assets/leetcodeLoginLogo.svg"
 import Footer from '../Components/Footer'
 import { useNavigate } from 'react-router-dom'
+import { loginUser } from '../../api/Auth'
 
 const Login = () => {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = async () => {
+    setError('')
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields')
+      return
+    }
+    setLoading(true)
+    try {
+      await loginUser(formData.email, formData.password)
+      navigate('/')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
   return (
     <div className='bg-[#eceff1] h-screen w-screen flex flex-col'>
       <Navbar />
@@ -19,12 +44,19 @@ const Login = () => {
               className='w-full border-[1px] border-[#cfd8dc] h-[40px] p-[10px] outline-none rounded-[3px] transition-colors duration-150 hover:border-black focus:border-[#fbc02e] text-[14px] placeholder:text-[#bdbdbd]'
               style={{ '--tw-ring-color': 'transparent' }}
               placeholder='Username or E-mail'
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
             />
             <div className='w-full border-[1px] border-[#cfd8dc] h-[40px] p-[10px] outline-none rounded-[3px] transition-colors duration-150 hover:border-black focus:border-[#fbc02e] text-[14px] flex items-center'>
               <input
                 type={showPassword ? "text" : "password"}
                 className='placeholder:text-[#bdbdbd] w-full outline-none'
                 placeholder='Password'
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+
               />
               {showPassword ? (
                 <svg onClick={() => setShowPassword(false)} className="cursor-pointer" viewBox="0 0 24 24" width="1em" height="1em">
@@ -38,8 +70,13 @@ const Login = () => {
 
             </div>
           </div>
-          <button className='mt-[25px] bg-gradient-to-br from-[#546e7a] to-[#37474f] w-full h-[40px] text-[#fff] text-[14px] rounded-[3px] cursor-pointer'>
-            Sign in
+          {error && <p className='text-red-500 text-[12px] mt-[-10px]'>{error}</p>}
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className='mt-[25px] bg-gradient-to-br from-[#546e7a] to-[#37474f] w-full h-[40px] text-[#fff] text-[14px] rounded-[3px] cursor-pointer disabled:opacity-60'
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
           <div className='flex justify-between w-full mt-[20px] text-[#546e7a] text-[14px]'>
             <div className='cursor-pointer'>

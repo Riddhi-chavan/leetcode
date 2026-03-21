@@ -15,3 +15,22 @@ export const registerUser = async (name, email, password) => {
 
     return data;
 };
+
+export const loginUser = async (email, password) => {
+    const response = await fetch('http://localhost:3000/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+    });
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : {};
+
+    if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+    }
+
+    return data;
+};

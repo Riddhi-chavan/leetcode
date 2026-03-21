@@ -33,7 +33,7 @@ const Register = () => {
         setLoading(true)
         try {
             await registerUser(formData.name, formData.email, formData.password)
-            navigate('/accounts/login/')
+            navigate('/')
         } catch (err) {
             setError(err.message)
         } finally {
