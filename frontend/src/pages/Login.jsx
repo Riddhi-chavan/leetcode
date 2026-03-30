@@ -25,7 +25,7 @@ const Login = () => {
     setLoading(true)
     try {
       await loginUser(formData.email, formData.password)
-      navigate('/')
+      navigate('/problemset/')
     } catch (err) {
       setError(err.message)
     } finally {
