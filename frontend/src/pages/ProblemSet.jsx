@@ -127,7 +127,7 @@ const ProblemSet = () => {
         return filtered.map((problem, idx) => (
             <div
                 key={problem.id}
-                onClick={() => navigate(`/problems/${problem.id}`)}
+                onClick={() => navigate(`/problemset/${problem.id}`)}
                 onMouseEnter={() => setHoveredRow(problem.id)}
                 onMouseLeave={() => setHoveredRow(null)}
                 className={`grid grid-cols-[32px_1fr_100px_90px_70px] gap-0 px-4 py-3 cursor-pointer transition-colors border-b border-[#2a2a2a] last:border-b-0 ${idx % 2 === 0 ? 'bg-[#141414]' : 'bg-[#111111]'
