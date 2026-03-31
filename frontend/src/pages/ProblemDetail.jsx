@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getProblem } from '../../api/Problems'
+import { getAllProblems, getProblem } from '../../api/Problems'
 
 const diffColor = (d) => {
   if (!d) return ''
   const normalized = d.charAt(0) + d.slice(1).toLowerCase()
-  if (normalized === 'Easy')   return 'text-[#00b8a3]'
+  if (normalized === 'Easy') return 'text-[#00b8a3]'
   if (normalized === 'Medium') return 'text-[#ffc01e]'
-  if (normalized === 'Hard')   return 'text-[#ff375f]'
+  if (normalized === 'Hard') return 'text-[#ff375f]'
   return ''
 }
 
 const diffBg = (d) => {
   if (!d) return ''
   const normalized = d.charAt(0) + d.slice(1).toLowerCase()
-  if (normalized === 'Easy')   return 'bg-[#00b8a3]/10 text-[#00b8a3] border border-[#00b8a3]/20'
+  if (normalized === 'Easy') return 'bg-[#00b8a3]/10 text-[#00b8a3] border border-[#00b8a3]/20'
   if (normalized === 'Medium') return 'bg-[#ffc01e]/10 text-[#ffc01e] border border-[#ffc01e]/20'
-  if (normalized === 'Hard')   return 'bg-[#ff375f]/10 text-[#ff375f] border border-[#ff375f]/20'
+  if (normalized === 'Hard') return 'bg-[#ff375f]/10 text-[#ff375f] border border-[#ff375f]/20'
   return ''
 }
 
@@ -24,11 +24,10 @@ const diffBg = (d) => {
 const Tab = ({ label, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`px-4 h-[42px] text-[13px] border-b-2 transition-colors ${
-      active
-        ? 'border-[#ffa116] text-white'
-        : 'border-transparent text-[#6b6b6b] hover:text-[#e8e8e8]'
-    }`}
+    className={`px-4 h-[42px] text-[13px] border-b-2 transition-colors ${active
+      ? 'border-[#ffa116] text-white'
+      : 'border-transparent text-[#6b6b6b] hover:text-[#e8e8e8]'
+      }`}
   >
     {label}
   </button>
@@ -100,7 +99,7 @@ const DescriptionPanel = ({ problem }) => (
     {problem.hints && (
       <details className="group">
         <summary className="cursor-pointer text-[13px] text-[#ffa116] hover:text-[#ffb84d] transition-colors list-none flex items-center gap-1.5">
-          <svg className="w-3 h-3 transition-transform group-open:rotate-90" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l8 7-8 7"/></svg>
+          <svg className="w-3 h-3 transition-transform group-open:rotate-90" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l8 7-8 7" /></svg>
           Show hint
         </summary>
         <div className="mt-2 p-3 rounded-[6px] bg-[#ffa116]/5 border border-[#ffa116]/20 text-[13px] text-[#c8c8c8]">
@@ -120,7 +119,7 @@ const SolutionsPanel = ({ problem }) => (
       <p className="text-[13px] text-[#c8c8c8] leading-relaxed">{problem.editorial}</p>
     ) : (
       <div className="flex flex-col items-center justify-center py-16 gap-2 text-[#6b6b6b]">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
         <span className="text-[13px]">No editorial yet</span>
       </div>
     )}
@@ -130,7 +129,7 @@ const SolutionsPanel = ({ problem }) => (
 // ── Submissions panel ─────────────────────────────────────────────────────────
 const SubmissionsPanel = () => (
   <div className="flex flex-col items-center justify-center h-full gap-2 text-[#6b6b6b]">
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
     <span className="text-[13px]">No submissions yet</span>
     <span className="text-[11px]">Submit your solution to see results here</span>
   </div>
@@ -157,10 +156,10 @@ const CodeEditor = ({ problem, language, setLanguage }) => {
         </select>
         <div className="ml-auto flex items-center gap-2">
           <button className="text-[#6b6b6b] hover:text-[#e8e8e8] transition-colors p-1" title="Reset code">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-4.5" /></svg>
           </button>
           <button className="text-[#6b6b6b] hover:text-[#e8e8e8] transition-colors p-1" title="Full screen">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
           </button>
         </div>
       </div>
@@ -200,11 +199,10 @@ const TestCasesPanel = ({ problem }) => {
           <button
             key={i}
             onClick={() => setActiveCase(i)}
-            className={`px-3 py-2 text-[12px] rounded-t-[4px] transition-colors ${
-              activeCase === i
-                ? 'bg-[#2a2a2a] text-[#e8e8e8]'
-                : 'text-[#6b6b6b] hover:text-[#e8e8e8]'
-            }`}
+            className={`px-3 py-2 text-[12px] rounded-t-[4px] transition-colors ${activeCase === i
+              ? 'bg-[#2a2a2a] text-[#e8e8e8]'
+              : 'text-[#6b6b6b] hover:text-[#e8e8e8]'
+              }`}
           >
             Case {i + 1}
           </button>
@@ -239,11 +237,12 @@ const ProblemDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const [problem, setProblem]   = useState(null)
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
-  const [leftTab, setLeftTab]   = useState('description')  // description | solutions | submissions
+  const [problem, setProblem] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [leftTab, setLeftTab] = useState('description')  // description | solutions | submissions
   const [language, setLanguage] = useState('javascript')
+  const [problems, setProblems] = useState([])
 
   useEffect(() => {
     const fetch = async () => {
@@ -261,6 +260,15 @@ const ProblemDetail = () => {
     }
     fetch()
   }, [id])
+
+  useEffect(() => {
+    getAllProblems().then(setProblems)
+  }, [])
+
+  const currentIndex = problems.findIndex(p => p.id === id)
+  const prevProblem = problems[currentIndex - 1]
+  const nextProblem = problems[currentIndex + 1]
+
 
   if (loading) {
     return (
@@ -299,7 +307,7 @@ const ProblemDetail = () => {
         </span>
 
         <div className="flex items-center gap-1 text-[#6b6b6b] text-[12px]">
-          <button onClick={() => navigate('/problems')} className="hover:text-[#e8e8e8] transition-colors">
+          <button onClick={() => navigate('/problemset/')} className="hover:text-[#e8e8e8] transition-colors">
             Problems
           </button>
           <span>/</span>
@@ -309,16 +317,18 @@ const ProblemDetail = () => {
         {/* Prev / Next navigation */}
         <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={() => navigate(`/problems/${parseInt(id) - 1}`)}
-            className="w-[28px] h-[28px] flex items-center justify-center rounded-[4px] bg-[#2a2a2a] text-[#6b6b6b] hover:text-[#e8e8e8] hover:bg-[#333] transition-colors"
+            onClick={() => prevProblem && navigate(`/problemset/${prevProblem.id}`)}
+            disabled={!prevProblem}
+            className={`w-[28px] h-[28px] flex items-center justify-center rounded-[4px] bg-[#2a2a2a] transition-colors ${prevProblem ? 'text-[#6b6b6b] hover:text-[#e8e8e8] hover:bg-[#333]' : 'text-[#3a3a3a] cursor-not-allowed'}`}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <button
-            onClick={() => navigate(`/problems/${parseInt(id) + 1}`)}
-            className="w-[28px] h-[28px] flex items-center justify-center rounded-[4px] bg-[#2a2a2a] text-[#6b6b6b] hover:text-[#e8e8e8] hover:bg-[#333] transition-colors"
+            onClick={() => nextProblem && navigate(`/problemset/${nextProblem.id}`)}
+            disabled={!nextProblem}
+            className={`w-[28px] h-[28px] flex items-center justify-center rounded-[4px] bg-[#2a2a2a] transition-colors ${nextProblem ? 'text-[#6b6b6b] hover:text-[#e8e8e8] hover:bg-[#333]' : 'text-[#3a3a3a] cursor-not-allowed'}`}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
           </button>
         </div>
       </nav>
@@ -331,15 +341,15 @@ const ProblemDetail = () => {
           {/* Tabs */}
           <div className="flex border-b border-[#2a2a2a] bg-[#1a1a1a] flex-shrink-0">
             <Tab label="Description" active={leftTab === 'description'} onClick={() => setLeftTab('description')} />
-            <Tab label="Solutions"   active={leftTab === 'solutions'}   onClick={() => setLeftTab('solutions')}   />
+            <Tab label="Solutions" active={leftTab === 'solutions'} onClick={() => setLeftTab('solutions')} />
             <Tab label="Submissions" active={leftTab === 'submissions'} onClick={() => setLeftTab('submissions')} />
           </div>
 
           {/* Tab content */}
           <div className="flex-1 overflow-hidden">
-            {leftTab === 'description'  && <DescriptionPanel problem={problem} />}
-            {leftTab === 'solutions'    && <SolutionsPanel   problem={problem} />}
-            {leftTab === 'submissions'  && <SubmissionsPanel />}
+            {leftTab === 'description' && <DescriptionPanel problem={problem} />}
+            {leftTab === 'solutions' && <SolutionsPanel problem={problem} />}
+            {leftTab === 'submissions' && <SubmissionsPanel />}
           </div>
         </div>
 

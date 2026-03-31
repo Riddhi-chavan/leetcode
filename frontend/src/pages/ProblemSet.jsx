@@ -208,9 +208,9 @@ const ProblemSet = () => {
                     problems={problems}
                     solved={solved}
                     total={total}
-                    diffColor={diffColor} 
+                    diffColor={diffColor}
                     attempted={attempted}
-                    />
+                />
             </div>
         </div>
     )
