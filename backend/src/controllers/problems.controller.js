@@ -125,7 +125,7 @@ export const getProblem = async (req, res) => {
 }
 
 export const runCode = async (req, res) => {
-    const { source_code, language, problem_id } = req.body
+    const { source_code, language, problem_id, customTestCases = [] } = req.body
 
     if (!source_code || !language || !problem_id) {
         return res.status(400).json({ error: "source_code, language, and problem_id are required" })
@@ -143,13 +143,29 @@ export const runCode = async (req, res) => {
             return res.status(400).json({ error: `Unsupported language: ${language}` })
         }
 
-        // Only run against first 3 test cases for "Run" (not all — that's Submit)
-        const testCases = problem.testCases.slice(0, 3)
+        // Only first 3 builtin test cases for Run
+        const builtinCases = problem.testCases.slice(0, 3)
+
+        // Parse custom test cases — textarea values come in as strings, so JSON.parse them
+        const parsedCustom = customTestCases.map(tc => ({
+            input: Object.fromEntries(
+                Object.entries(tc.input).map(([k, v]) => {
+                    try { return [k, JSON.parse(v)] }
+                    catch { return [k, v] }
+                })
+            ),
+            output: (() => {
+                try { return JSON.parse(tc.output) }
+                catch { return tc.output }
+            })()
+        }))
+
+        const testCases = [...builtinCases, ...parsedCustom]
 
         const submissions = testCases.map(({ input, output }) => ({
-            source_code: wrapCode(language, source_code, input),  // <-- wraps and calls the function
+            source_code: wrapCode(language, source_code, input),
             language_id: languageId,
-            stdin: '',  // input is now baked into the code itself
+            stdin: '',
             expected_output: typeof output === 'object' ? JSON.stringify(output) : String(output),
         }))
 
@@ -158,15 +174,15 @@ export const runCode = async (req, res) => {
         const results = await pollBatchResults(tokens)
 
         const testResults = results.map((result, i) => ({
-            testCase: i + 1,
-            input: testCases[i].input,
+            testCase:       i + 1,
+            input:          testCases[i].input,
             expectedOutput: testCases[i].output,
-            actualOutput: result.stdout?.trim() ?? null,
-            passed: result.status.id === 3,   // 3 = Accepted in Judge0
-            status: result.status.description,
-            stderr: result.stderr ?? null,
-            time: result.time,
-            memory: result.memory,
+            actualOutput:   result.stdout?.trim() ?? null,
+            passed:         result.status.id === 3,
+            status:         result.status.description,
+            stderr:         result.stderr ?? null,
+            time:           result.time,
+            memory:         result.memory,
         }))
 
         const allPassed = testResults.every(r => r.passed)
@@ -174,8 +190,8 @@ export const runCode = async (req, res) => {
         res.status(200).json({
             success: true,
             allPassed,
-            runtime: results[0]?.time ? `${results[0].time}ms` : null,
-            memory: results[0]?.memory ? `${results[0].memory}KB` : null,
+            runtime: results[0]?.time   ? `${results[0].time}ms`   : null,
+            memory:  results[0]?.memory ? `${results[0].memory}KB` : null,
             testResults,
         })
 
