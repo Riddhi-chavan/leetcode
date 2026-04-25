@@ -67,3 +67,27 @@ export const createProblem = async (problemData) => {
 
     return data;
 };
+
+export const runCode = async ({ source_code, language, problem_id }) => {
+    const response = await fetch(`${BASE_URL}/problems/run-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ source_code, language, problem_id }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to run code');
+    return data;
+};
+
+export const submitCode = async ({ source_code, language, problem_id }) => {
+    const response = await fetch(`${BASE_URL}/problems/submit-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ source_code, language, problem_id }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to submit code');
+    return data;
+};
