@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getAllProblems, getProblem, runCode, submitCode } from '../../api/Problems'
 import Editor from '@monaco-editor/react'
@@ -93,11 +93,9 @@ const SubmissionsPanel = ({ submitResult }) => {
   const { allPassed, passedCount, totalCount, firstFailed, runtime, memory } = submitResult
   const percent = Math.round((passedCount / totalCount) * 100)
 
-  // ── ACCEPTED ──
   if (allPassed) {
     return (
       <div className="flex flex-col h-full overflow-hidden">
-        {/* Banner */}
         <div className="px-5 py-4 bg-[#00b8a3]/5 border-b border-[#2a2a2a] flex items-center justify-between flex-shrink-0">
           <div className="flex flex-col gap-0.5">
             <span className="text-[22px] font-bold text-[#00b8a3]">✓ Accepted</span>
@@ -118,22 +116,16 @@ const SubmissionsPanel = ({ submitResult }) => {
             )}
           </div>
         </div>
-
-        {/* Accepted body */}
         <div className="flex flex-col items-center justify-center flex-1 gap-5 p-6">
-          {/* Big checkmark */}
           <div className="w-20 h-20 rounded-full bg-[#00b8a3]/10 border-2 border-[#00b8a3]/30 flex items-center justify-center">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00b8a3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
-
           <div className="flex flex-col items-center gap-1">
             <span className="text-[16px] font-semibold text-[#e8e8e8]">Great job!</span>
             <span className="text-[12px] text-[#6b6b6b]">Your solution is correct and efficient.</span>
           </div>
-
-          {/* Progress bar */}
           <div className="w-full max-w-[340px] flex flex-col gap-2">
             <div className="flex justify-between text-[11px] text-[#6b6b6b]">
               <span>Test cases passed</span>
@@ -148,103 +140,63 @@ const SubmissionsPanel = ({ submitResult }) => {
     )
   }
 
-  // ── WRONG ANSWER ──
   const fc = firstFailed
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Banner */}
       <div className="px-5 py-4 bg-[#ff375f]/5 border-b border-[#2a2a2a] flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
           <div className="flex flex-col gap-0.5">
             <span className="text-[22px] font-bold text-[#ff375f]">✗ Wrong Answer</span>
-            <span className="text-[12px] text-[#6b6b6b]">
-              {passedCount} / {totalCount} test cases passed ({percent}%)
-            </span>
+            <span className="text-[12px] text-[#6b6b6b]">{passedCount} / {totalCount} test cases passed ({percent}%)</span>
           </div>
           <div className="flex flex-col items-center px-3 py-1.5 rounded-[6px] bg-[#ff375f]/10 border border-[#ff375f]/20">
-            <span className="text-[13px] font-semibold text-[#ff375f]">
-              {totalCount - passedCount} failed
-            </span>
+            <span className="text-[13px] font-semibold text-[#ff375f]">{totalCount - passedCount} failed</span>
             <span className="text-[10px] text-[#ff375f]/60">test cases</span>
           </div>
         </div>
-        {/* Progress bar */}
         <div className="flex flex-col gap-1.5">
           <div className="h-[5px] rounded-full bg-[#2a2a2a] overflow-hidden">
-            <div
-              className="h-full rounded-full bg-[#ff375f] transition-all duration-700"
-              style={{ width: `${percent}%` }}
-            />
+            <div className="h-full rounded-full bg-[#ff375f] transition-all duration-700" style={{ width: `${percent}%` }}/>
           </div>
-          <div className="flex justify-between text-[10px] text-[#4b4b4b]">
-            <span>0</span>
-            <span>{totalCount}</span>
-          </div>
+          <div className="flex justify-between text-[10px] text-[#4b4b4b]"><span>0</span><span>{totalCount}</span></div>
         </div>
       </div>
-
-      {/* First failing case */}
       {fc && (
         <div className="flex-1 overflow-y-auto p-4">
           <div className="flex flex-col gap-3">
-
-            {/* Label */}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-medium text-[#6b6b6b] uppercase tracking-wider">
-                First failing test case
-              </span>
+              <span className="text-[11px] font-medium text-[#6b6b6b] uppercase tracking-wider">First failing test case</span>
               <div className="flex-1 h-px bg-[#2a2a2a]"/>
-              <span className="text-[11px] px-2 py-0.5 rounded-[4px] bg-[#ff375f]/10 text-[#ff375f] border border-[#ff375f]/20">
-                Case #{fc.testCase}
-              </span>
+              <span className="text-[11px] px-2 py-0.5 rounded-[4px] bg-[#ff375f]/10 text-[#ff375f] border border-[#ff375f]/20">Case #{fc.testCase}</span>
             </div>
-
-            {/* Status */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-[6px] bg-[#ff375f]/5 border border-[#ff375f]/20 w-fit">
               <span className="text-[12px] font-medium text-[#ff375f]">✗ {fc.status}</span>
               {fc.time && <span className="text-[11px] text-[#6b6b6b] border-l border-[#3a3a3a] pl-2">{fc.time}ms</span>}
             </div>
-
-            {/* Input */}
             <div className="flex flex-col gap-1">
               <span className="text-[11px] text-[#6b6b6b] font-medium">Input</span>
               <div className="bg-[#1a1a1a] rounded-[6px] px-3 py-2.5 font-mono text-[12px] text-[#e8e8e8] border border-[#2a2a2a]">
                 {Object.entries(fc.input || {}).map(([k, v]) => (
-                  <div key={k}>
-                    <span className="text-[#6b6b6b]">{k}</span>
-                    {' = '}
-                    <span>{JSON.stringify(v)}</span>
-                  </div>
+                  <div key={k}><span className="text-[#6b6b6b]">{k}</span>{' = '}<span>{JSON.stringify(v)}</span></div>
                 ))}
               </div>
             </div>
-
-            {/* Expected vs Got */}
             <div className="grid grid-cols-2 gap-2">
               <div className="flex flex-col gap-1">
                 <span className="text-[11px] text-[#6b6b6b] font-medium">Expected output</span>
-                <div className="bg-[#1a1a1a] rounded-[6px] px-3 py-2.5 font-mono text-[12px] text-[#00b8a3] border border-[#00b8a3]/20 min-h-[38px]">
-                  {JSON.stringify(fc.expectedOutput)}
-                </div>
+                <div className="bg-[#1a1a1a] rounded-[6px] px-3 py-2.5 font-mono text-[12px] text-[#00b8a3] border border-[#00b8a3]/20 min-h-[38px]">{JSON.stringify(fc.expectedOutput)}</div>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[11px] text-[#6b6b6b] font-medium">Your output</span>
-                <div className="bg-[#1a1a1a] rounded-[6px] px-3 py-2.5 font-mono text-[12px] text-[#ff375f] border border-[#ff375f]/20 min-h-[38px]">
-                  {fc.actualOutput ?? 'null'}
-                </div>
+                <div className="bg-[#1a1a1a] rounded-[6px] px-3 py-2.5 font-mono text-[12px] text-[#ff375f] border border-[#ff375f]/20 min-h-[38px]">{fc.actualOutput ?? 'null'}</div>
               </div>
             </div>
-
-            {/* Stderr */}
             {fc.stderr && (
               <div className="flex flex-col gap-1">
                 <span className="text-[11px] text-[#6b6b6b] font-medium">Error</span>
-                <div className="bg-[#ff375f]/5 rounded-[6px] px-3 py-2.5 font-mono text-[12px] text-[#ff375f] border border-[#ff375f]/20 whitespace-pre-wrap">
-                  {fc.stderr}
-                </div>
+                <div className="bg-[#ff375f]/5 rounded-[6px] px-3 py-2.5 font-mono text-[12px] text-[#ff375f] border border-[#ff375f]/20 whitespace-pre-wrap">{fc.stderr}</div>
               </div>
             )}
-
           </div>
         </div>
       )}
@@ -252,27 +204,15 @@ const SubmissionsPanel = ({ submitResult }) => {
   )
 }
 
-
-
 const CodeEditor = ({ problem, language, setLanguage, onRun, onSubmit, running, submitting }) => {
   const LANGUAGES = ['javascript', 'python', 'java']
-
-  const monacoLangMap = {
-    javascript: 'javascript',
-    python: 'python',
-    java: 'java',
-  }
-
+  const monacoLangMap = { javascript: 'javascript', python: 'python', java: 'java' }
   const snippet = problem?.codeSnippets?.[language] || '// select a language'
   const [code, setCode] = useState(snippet)
 
-  // Reset code when language or problem changes
-  useEffect(() => {
-    setCode(snippet)
-  }, [language, snippet])
+  useEffect(() => { setCode(snippet) }, [language, snippet])
 
   const handleEditorMount = (editor, monaco) => {
-    // VS Code dark theme
     monaco.editor.defineTheme('leetcode-dark', {
       base: 'vs-dark',
       inherit: true,
@@ -296,7 +236,6 @@ const CodeEditor = ({ problem, language, setLanguage, onRun, onSubmit, running, 
 
   return (
     <div className="flex flex-col h-full">
-      {/* Toolbar */}
       <div className="h-[42px] bg-[#1a1a1a] border-b border-[#2a2a2a] flex items-center px-4 gap-3 flex-shrink-0">
         <select
           value={language}
@@ -307,8 +246,6 @@ const CodeEditor = ({ problem, language, setLanguage, onRun, onSubmit, running, 
             <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>
           ))}
         </select>
-
-        {/* Reset button */}
         <div className="ml-auto">
           <button
             onClick={() => setCode(snippet)}
@@ -323,7 +260,6 @@ const CodeEditor = ({ problem, language, setLanguage, onRun, onSubmit, running, 
         </div>
       </div>
 
-      {/* Monaco Editor */}
       <div className="flex-1 overflow-hidden">
         <Editor
           height="100%"
@@ -352,25 +288,18 @@ const CodeEditor = ({ problem, language, setLanguage, onRun, onSubmit, running, 
             formatOnType: true,
             autoIndent: 'full',
             bracketPairColorization: { enabled: true },
-            guides: {
-              bracketPairs: true,
-              indentation: true,
-            },
+            guides: { bracketPairs: true, indentation: true },
             renderWhitespace: 'none',
             folding: true,
             foldingHighlight: true,
             showFoldingControls: 'mouseover',
             occurrencesHighlight: true,
             selectionHighlight: true,
-            scrollbar: {
-              verticalScrollbarSize: 6,
-              horizontalScrollbarSize: 6,
-            },
+            scrollbar: { verticalScrollbarSize: 6, horizontalScrollbarSize: 6 },
           }}
         />
       </div>
 
-      {/* Run / Submit bar */}
       <div className="h-[52px] bg-[#1a1a1a] border-t border-[#2a2a2a] flex items-center px-4 gap-3 flex-shrink-0">
         <button
           onClick={() => onRun(code)}
@@ -380,7 +309,6 @@ const CodeEditor = ({ problem, language, setLanguage, onRun, onSubmit, running, 
           {running && <div className="w-3 h-3 border border-[#e8e8e8] border-t-transparent rounded-full animate-spin"/>}
           {running ? 'Running...' : 'Run'}
         </button>
-
         <button
           onClick={() => onSubmit(code)}
           disabled={running || submitting}
@@ -401,22 +329,18 @@ const BottomPanel = ({ problem, runResult, submitResult, customTestCases, setCus
   const result = submitResult || runResult
 
   const addCustomCase = () => {
-    // Build a blank case mirroring the shape of the first test case's input keys
     const template = builtinCases[0]?.input || {}
     const blankInput = Object.fromEntries(Object.keys(template).map(k => [k, '']))
     const newCase = { input: blankInput, output: '', isCustom: true }
     setCustomTestCases(prev => [...prev, newCase])
-    setActiveCase(allCases.length) // switch to the new tab
+    setActiveCase(allCases.length)
   }
 
   const updateCustomCase = (customIndex, field, keyOrVal, value) => {
     setCustomTestCases(prev => {
       const updated = [...prev]
       if (field === 'input') {
-        updated[customIndex] = {
-          ...updated[customIndex],
-          input: { ...updated[customIndex].input, [keyOrVal]: value }
-        }
+        updated[customIndex] = { ...updated[customIndex], input: { ...updated[customIndex].input, [keyOrVal]: value } }
       } else {
         updated[customIndex] = { ...updated[customIndex], output: value }
       }
@@ -433,19 +357,15 @@ const BottomPanel = ({ problem, runResult, submitResult, customTestCases, setCus
 
   if (result) {
     const tc = result.testResults?.[activeCase]
-
     return (
       <div className="flex flex-col h-full">
         <div className={`px-4 py-2.5 flex items-center gap-3 border-b border-[#2a2a2a] ${result.allPassed ? 'bg-[#00b8a3]/5' : 'bg-[#ff375f]/5'}`}>
           <span className={`text-[14px] font-semibold ${result.allPassed ? 'text-[#00b8a3]' : 'text-[#ff375f]'}`}>
-            {submitResult
-              ? (result.allPassed ? '✓ Accepted' : '✗ Wrong Answer')
-              : (result.allPassed ? '✓ All cases passed' : '✗ Some cases failed')}
+            {submitResult ? (result.allPassed ? '✓ Accepted' : '✗ Wrong Answer') : (result.allPassed ? '✓ All cases passed' : '✗ Some cases failed')}
           </span>
           {result.runtime && <span className="text-[11px] text-[#6b6b6b] ml-auto">Runtime: {result.runtime}</span>}
           {result.memory  && <span className="text-[11px] text-[#6b6b6b]">Memory: {result.memory}</span>}
         </div>
-
         <div className="flex items-center gap-1 px-4 pt-2 pb-0 border-b border-[#2a2a2a] bg-[#1a1a1a]">
           {result.testResults?.map((t, i) => (
             <button key={i} onClick={() => setActiveCase(i)}
@@ -458,7 +378,6 @@ const BottomPanel = ({ problem, runResult, submitResult, customTestCases, setCus
             </button>
           ))}
         </div>
-
         {tc && (
           <div className={`flex-1 overflow-y-auto p-4 ${tc.passed ? 'bg-[#00b8a3]/[0.02]' : 'bg-[#ff375f]/[0.02]'}`}>
             <div className="flex flex-col gap-3">
@@ -489,13 +408,11 @@ const BottomPanel = ({ problem, runResult, submitResult, customTestCases, setCus
     )
   }
 
-  // ---- Default view (no result yet) ----
   const activeIsCustom = activeCase >= builtinCases.length
   const customIndex    = activeCase - builtinCases.length
 
   return (
     <div className="flex flex-col h-full">
-      {/* Tabs row */}
       <div className="flex items-center gap-1 px-4 pt-3 pb-0 border-b border-[#2a2a2a] overflow-x-auto">
         {builtinCases.map((_, i) => (
           <button key={i} onClick={() => setActiveCase(i)}
@@ -508,27 +425,17 @@ const BottomPanel = ({ problem, runResult, submitResult, customTestCases, setCus
             className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 text-[12px] rounded-t-[4px] transition-colors
               ${activeCase === builtinCases.length + i ? 'bg-[#2a2a2a] text-[#ffa116]' : 'text-[#6b6b6b] hover:text-[#e8e8e8]'}`}>
             Custom {i + 1}
-            {/* Delete button */}
-            <span
-              onClick={e => { e.stopPropagation(); deleteCustomCase(i) }}
-              className="text-[#6b6b6b] hover:text-[#ff375f] transition-colors leading-none"
-              title="Remove">✕</span>
+            <span onClick={e => { e.stopPropagation(); deleteCustomCase(i) }} className="text-[#6b6b6b] hover:text-[#ff375f] transition-colors leading-none" title="Remove">✕</span>
           </button>
         ))}
-        {/* + Add button */}
-        <button onClick={addCustomCase}
-          className="flex-shrink-0 flex items-center gap-1 px-2.5 py-2 text-[12px] text-[#6b6b6b] hover:text-[#ffa116] transition-colors ml-1"
-          title="Add custom test case">
+        <button onClick={addCustomCase} className="flex-shrink-0 flex items-center gap-1 px-2.5 py-2 text-[12px] text-[#6b6b6b] hover:text-[#ffa116] transition-colors ml-1" title="Add custom test case">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
           Add case
         </button>
       </div>
-
-      {/* Case content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        {/* Built-in case — read only */}
         {!activeIsCustom && builtinCases[activeCase] && (
           <div className="flex flex-col gap-3">
             {Object.entries(builtinCases[activeCase].input).map(([key, val]) => (
@@ -543,8 +450,6 @@ const BottomPanel = ({ problem, runResult, submitResult, customTestCases, setCus
             </div>
           </div>
         )}
-
-        {/* Custom case — editable */}
         {activeIsCustom && customTestCases[customIndex] && (
           <div className="flex flex-col gap-3">
             <p className="text-[11px] text-[#6b6b6b]">Edit your custom test case. Click Run to test it.</p>
@@ -579,6 +484,52 @@ const BottomPanel = ({ problem, runResult, submitResult, customTestCases, setCus
   )
 }
 
+// ─── Resizable divider hook ───────────────────────────────────────────────────
+const BOTTOM_MIN = 38   // px – smallest the bottom panel can get
+const BOTTOM_MAX = 0.8  // fraction of container – largest it can get
+
+const useVerticalResize = (containerRef, initialBottomPx = 280) => {
+  const [bottomHeight, setBottomHeight] = useState(initialBottomPx)
+  const dragging = useRef(false)
+  const startY   = useRef(0)
+  const startH   = useRef(0)
+
+  const onMouseDown = useCallback((e) => {
+    e.preventDefault()
+    dragging.current = true
+    startY.current   = e.clientY
+    startH.current   = bottomHeight
+    document.body.style.cursor    = 'row-resize'
+    document.body.style.userSelect = 'none'
+  }, [bottomHeight])
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!dragging.current) return
+      const delta      = startY.current - e.clientY          // drag up → bigger bottom
+      const container  = containerRef.current
+      const maxH       = container ? container.clientHeight * BOTTOM_MAX : 9999
+      const newH       = Math.min(maxH, Math.max(BOTTOM_MIN, startH.current + delta))
+      setBottomHeight(newH)
+    }
+    const onUp = () => {
+      if (!dragging.current) return
+      dragging.current = false
+      document.body.style.cursor    = ''
+      document.body.style.userSelect = ''
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup',   onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup',   onUp)
+    }
+  }, [containerRef])
+
+  return { bottomHeight, onMouseDown }
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 const ProblemDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -593,6 +544,10 @@ const ProblemDetail = () => {
   const [runResult, setRunResult]       = useState(null)
   const [submitResult, setSubmitResult] = useState(null)
   const [customTestCases, setCustomTestCases] = useState([])
+
+  // Ref on the right column so the resize hook can read its height
+  const rightColRef = useRef(null)
+  const { bottomHeight, onMouseDown: onDividerMouseDown } = useVerticalResize(rightColRef, 280)
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -616,28 +571,24 @@ const ProblemDetail = () => {
   const handleRun = async (code) => {
     if (!code.trim()) return
     setRunning(true); setRunResult(null); setSubmitResult(null)
-    try { setRunResult(await runCode({ source_code: code, language, problem_id: id ,customTestCases })) }
+    try { setRunResult(await runCode({ source_code: code, language, problem_id: id, customTestCases })) }
     catch (err) { console.error(err) }
     finally { setRunning(false) }
   }
 
   const handleSubmit = async (code) => {
-  if (!code.trim()) return
-  setSubmitting(true); setRunResult(null); setSubmitResult(null)
-  try {
-    // Run both in parallel — submit for the verdict, runCode for testResults
-    const [submitRes, runRes] = await Promise.all([
-      submitCode({ source_code: code, language, problem_id: id }),
-      runCode({ source_code: code, language, problem_id: id, customTestCases })
-    ])
-    // Merge: keep submit verdict but attach testResults from runCode
-    setSubmitResult({ ...submitRes, testResults: runRes.testResults })
-    setLeftTab('submissions')
-  } catch (err) { console.error(err) }
-  finally { setSubmitting(false) }
-}
-
-
+    if (!code.trim()) return
+    setSubmitting(true); setRunResult(null); setSubmitResult(null)
+    try {
+      const [submitRes, runRes] = await Promise.all([
+        submitCode({ source_code: code, language, problem_id: id }),
+        runCode({ source_code: code, language, problem_id: id, customTestCases })
+      ])
+      setSubmitResult({ ...submitRes, testResults: runRes.testResults })
+      setLeftTab('submissions')
+    } catch (err) { console.error(err) }
+    finally { setSubmitting(false) }
+  }
 
   if (loading) return (
     <div className="min-h-screen bg-[#111111] flex items-center justify-center">
@@ -659,6 +610,7 @@ const ProblemDetail = () => {
 
   return (
     <div className="h-screen bg-[#111111] text-[#e8e8e8] flex flex-col overflow-hidden">
+      {/* ── Nav ── */}
       <nav className="h-[50px] bg-[#1a1a1a] border-b border-[#2a2a2a] flex items-center px-4 gap-4 flex-shrink-0 z-50">
         <span onClick={() => navigate('/problems')} className="text-[#ffa116] font-bold text-[16px] tracking-tight cursor-pointer">leet<span className="text-white">code</span></span>
         <div className="flex items-center gap-1 text-[#6b6b6b] text-[12px]">
@@ -676,7 +628,9 @@ const ProblemDetail = () => {
         </div>
       </nav>
 
+      {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden">
+        {/* Left panel */}
         <div className="w-[420px] flex-shrink-0 flex flex-col border-r border-[#2a2a2a] overflow-hidden">
           <div className="flex border-b border-[#2a2a2a] bg-[#1a1a1a] flex-shrink-0">
             <Tab label="Description" active={leftTab === 'description'} onClick={() => setLeftTab('description')} />
@@ -690,11 +644,38 @@ const ProblemDetail = () => {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-hidden border-b border-[#2a2a2a]">
-            <CodeEditor problem={problem} language={language} setLanguage={setLanguage} onRun={handleRun} onSubmit={handleSubmit} running={running} submitting={submitting}/>
+        {/* Right column — editor + resizable bottom panel */}
+        <div ref={rightColRef} className="flex-1 flex flex-col overflow-hidden">
+
+          {/* Code editor — fills whatever space is left */}
+          <div className="flex-1 overflow-hidden border-b border-[#2a2a2a]" style={{ minHeight: 120 }}>
+            <CodeEditor
+              problem={problem}
+              language={language}
+              setLanguage={setLanguage}
+              onRun={handleRun}
+              onSubmit={handleSubmit}
+              running={running}
+              submitting={submitting}
+            />
           </div>
-          <div className="h-[280px] flex-shrink-0 bg-[#111111]">
+
+          {/* ── Drag handle ── */}
+          <div
+            onMouseDown={onDividerMouseDown}
+            className="group relative flex-shrink-0 h-[5px] bg-[#1a1a1a] hover:bg-[#ffa116]/30 active:bg-[#ffa116]/50 cursor-row-resize transition-colors z-10 border-t border-b border-[#2a2a2a]"
+            title="Drag to resize"
+          >
+            {/* Decorative dots */}
+            <div className="absolute inset-0 flex items-center justify-center gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <span className="w-[3px] h-[3px] rounded-full bg-[#ffa116]"/>
+              <span className="w-[3px] h-[3px] rounded-full bg-[#ffa116]"/>
+              <span className="w-[3px] h-[3px] rounded-full bg-[#ffa116]"/>
+            </div>
+          </div>
+
+          {/* Bottom panel — fixed height driven by drag */}
+          <div className="flex-shrink-0 bg-[#111111] overflow-hidden" style={{ height: bottomHeight }}>
             <div className="h-[38px] bg-[#1a1a1a] border-b border-[#2a2a2a] flex items-center px-4 gap-3">
               <span className="text-[12px] font-medium text-[#e8e8e8]">{(runResult || submitResult) ? 'Results' : 'Test Cases'}</span>
               {(runResult || submitResult) && (
@@ -703,10 +684,17 @@ const ProblemDetail = () => {
                 </button>
               )}
             </div>
-            <div className="h-[calc(100%-38px)] overflow-y-auto">
-              <BottomPanel problem={problem} runResult={runResult} submitResult={submitResult} customTestCases={customTestCases}setCustomTestCases={setCustomTestCases}/>
+            <div className="overflow-y-auto" style={{ height: bottomHeight  }}>
+              <BottomPanel
+                problem={problem}
+                runResult={runResult}
+                submitResult={submitResult}
+                customTestCases={customTestCases}
+                setCustomTestCases={setCustomTestCases}
+              />
             </div>
           </div>
+
         </div>
       </div>
     </div>
