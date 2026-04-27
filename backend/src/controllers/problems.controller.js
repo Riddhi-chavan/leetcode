@@ -4,6 +4,51 @@ import { prisma } from '../lib/db.js';
 import { wrapCode } from '../lib/codeWrapper.js';
 const { UserRole } = pkg;
 
+const generateTestCases = async (problem, language, count = 6) => {
+  const refSolution = problem.referenceSolutions?.[language] || problem.referenceSolutions?.['javascript']
+  if (!refSolution) return problem.testCases
+
+  const languageId = getLanguageId(language)
+  const existingInput = problem.testCases[0]?.input
+  if (!existingInput) return problem.testCases
+
+  const needed = count - problem.testCases.length
+
+  const randomCases = Array.from({ length: needed }, () => {
+    if ('nums' in existingInput && 'target' in existingInput) {
+      const length = Math.floor(Math.random() * 8) + 2
+      const nums   = Array.from({ length }, () => Math.floor(Math.random() * 20) - 5)
+      const i      = Math.floor(Math.random() * length)
+      let j        = Math.floor(Math.random() * length)
+      while (j === i) j = Math.floor(Math.random() * length)
+      const target = nums[i] + nums[j]
+      return { input: { nums, target }, output: null }
+    }
+    return null
+  }).filter(Boolean)
+
+  const submissions = randomCases.map(({ input }) => ({
+    source_code: wrapCode(language, refSolution, input),
+    language_id: languageId,
+    stdin: '',
+    expected_output: '',
+  }))
+
+  const submissionResults = await submitBatch(submissions)
+  const tokens  = submissionResults.map(r => r.token)
+  const results = await pollBatchResults(tokens)
+
+  const generatedCases = randomCases.map((tc, i) => ({
+    input:  tc.input,
+    output: (() => {
+      try { return JSON.parse(results[i].stdout?.trim() || 'null') }
+      catch { return null }
+    })()
+  })).filter(tc => tc.output !== null)
+
+  return [...problem.testCases, ...generatedCases].slice(0, count)
+}
+
 export const createProblem = async (req, res) => {
     const {
         title,
@@ -41,13 +86,11 @@ export const createProblem = async (req, res) => {
             }))
 
             const submissionResults = await submitBatch(submissions)
-
             const tokens = submissionResults.map((res) => res.token)
             const results = await pollBatchResults(tokens)
 
             for (let i = 0; i < results.length; i++) {
                 const result = results[i]
-
                 if (result.status.id !== 3) {
                     return res.status(400).json({
                         error: `Validation failed for ${languages} on input: ${submissions[i].stdin}`,
@@ -89,12 +132,7 @@ export const createProblem = async (req, res) => {
 export const getAllProblems = async (req, res) => {
     try {
         const problems = await prisma.problem.findMany()
-
-        res.status(200).json({
-            success: true,
-            problems
-        })
-
+        res.status(200).json({ success: true, problems })
     } catch (error) {
         console.error("Error fetching problems", error.message)
         res.status(500).json({ error: "Failed to fetch problems" })
@@ -103,21 +141,10 @@ export const getAllProblems = async (req, res) => {
 
 export const getProblem = async (req, res) => {
     const { id } = req.params
-
     try {
-        const problem = await prisma.problem.findUnique({
-            where: { id }
-        })
-
-        if (!problem) {
-            return res.status(404).json({ error: "Problem not found" })
-        }
-
-        res.status(200).json({
-            success: true,
-            problem
-        })
-
+        const problem = await prisma.problem.findUnique({ where: { id } })
+        if (!problem) return res.status(404).json({ error: "Problem not found" })
+        res.status(200).json({ success: true, problem })
     } catch (error) {
         console.error("Error fetching problem", error.message)
         res.status(500).json({ error: "Failed to fetch problem" })
@@ -133,20 +160,13 @@ export const runCode = async (req, res) => {
 
     try {
         const problem = await prisma.problem.findUnique({ where: { id: problem_id } })
-
-        if (!problem) {
-            return res.status(404).json({ error: "Problem not found" })
-        }
+        if (!problem) return res.status(404).json({ error: "Problem not found" })
 
         const languageId = getLanguageId(language)
-        if (!languageId) {
-            return res.status(400).json({ error: `Unsupported language: ${language}` })
-        }
+        if (!languageId) return res.status(400).json({ error: `Unsupported language: ${language}` })
 
-        // Only first 3 builtin test cases for Run
         const builtinCases = problem.testCases.slice(0, 3)
 
-        // Parse custom test cases — textarea values come in as strings, so JSON.parse them
         const parsedCustom = customTestCases.map(tc => ({
             input: Object.fromEntries(
                 Object.entries(tc.input).map(([k, v]) => {
@@ -201,7 +221,6 @@ export const runCode = async (req, res) => {
     }
 }
 
-
 export const submitCode = async (req, res) => {
     const { source_code, language, problem_id } = req.body
 
@@ -216,43 +235,47 @@ export const submitCode = async (req, res) => {
         const languageId = getLanguageId(language)
         if (!languageId) return res.status(400).json({ error: `Unsupported language: ${language}` })
 
-        // Submit runs ALL test cases
+        // 3 stored + 17 random = 20 total, fits in one Judge0 batch
+        const testCases = await generateTestCases(problem, language, 20)
+
         const submissions = testCases.map(({ input, output }) => ({
-            source_code: wrapCode(language, source_code, input),  // <-- wraps and calls the function
+            source_code: wrapCode(language, source_code, input),
             language_id: languageId,
-            stdin: '',  // input is now baked into the code itself
+            stdin: '',
             expected_output: typeof output === 'object' ? JSON.stringify(output) : String(output),
         }))
 
+        // Single batch of 20 — no chunking needed
         const submissionResults = await submitBatch(submissions)
-        const tokens = submissionResults.map(r => r.token)
+        const tokens  = submissionResults.map(r => r.token)
         const results = await pollBatchResults(tokens)
 
         const testResults = results.map((result, i) => ({
-            testCase: i + 1,
-            input: problem.testCases[i].input,
-            expectedOutput: problem.testCases[i].output,
-            actualOutput: result.stdout?.trim() ?? null,
-            passed: result.status.id === 3,
-            status: result.status.description,
-            stderr: result.stderr ?? null,
-            time: result.time,
-            memory: result.memory,
+            testCase:       i + 1,
+            input:          testCases[i].input,
+            expectedOutput: testCases[i].output,
+            actualOutput:   result.stdout?.trim() ?? null,
+            passed:         result.status.id === 3,
+            status:         result.status.description,
+            stderr:         result.stderr ?? null,
+            time:           result.time,
+            memory:         result.memory,
         }))
 
-        const allPassed = testResults.every(r => r.passed)
-        const status = allPassed ? 'ACCEPTED' : 'WRONG_ANSWER'
-
-        // TODO: Save submission to DB (Day 8 — Submissions history)
-        // await prisma.submission.create({ data: { ... } })
+        const passedCount = testResults.filter(r => r.passed).length
+        const totalCount  = testResults.length
+        const allPassed   = passedCount === totalCount
+        const firstFailed = testResults.find(r => !r.passed) || null
 
         res.status(200).json({
             success: true,
-            status,
+            status:      allPassed ? 'ACCEPTED' : 'WRONG_ANSWER',
             allPassed,
-            runtime: results[0]?.time ? `${results[0].time}ms` : null,
-            memory: results[0]?.memory ? `${results[0].memory}KB` : null,
-            testResults,
+            passedCount,
+            totalCount,
+            firstFailed,
+            runtime: results[0]?.time   ? `${results[0].time}ms`   : null,
+            memory:  results[0]?.memory ? `${results[0].memory}KB` : null,
         })
 
     } catch (error) {
@@ -260,4 +283,3 @@ export const submitCode = async (req, res) => {
         res.status(500).json({ error: "Failed to submit code" })
     }
 }
-
