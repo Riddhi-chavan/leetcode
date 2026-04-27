@@ -324,6 +324,8 @@ const BottomPanel = ({ problem, runResult, submitResult, customTestCases, setCus
     setActiveCase(Math.min(activeCase, allCases.length - 2))
   }
 
+  useEffect(() => { setActiveCase(0) }, [runResult, submitResult])
+
   if (result) {
     const tc = result.testResults?.[activeCase]
 
@@ -515,15 +517,22 @@ const ProblemDetail = () => {
   }
 
   const handleSubmit = async (code) => {
-    if (!code.trim()) return
-    setSubmitting(true); setRunResult(null); setSubmitResult(null)
-    try {
-      const result = await submitCode({ source_code: code, language, problem_id: id })
-      setSubmitResult(result)
-      setLeftTab('submissions')
-    } catch (err) { console.error(err) }
-    finally { setSubmitting(false) }
-  }
+  if (!code.trim()) return
+  setSubmitting(true); setRunResult(null); setSubmitResult(null)
+  try {
+    // Run both in parallel — submit for the verdict, runCode for testResults
+    const [submitRes, runRes] = await Promise.all([
+      submitCode({ source_code: code, language, problem_id: id }),
+      runCode({ source_code: code, language, problem_id: id, customTestCases })
+    ])
+    // Merge: keep submit verdict but attach testResults from runCode
+    setSubmitResult({ ...submitRes, testResults: runRes.testResults })
+    setLeftTab('submissions')
+  } catch (err) { console.error(err) }
+  finally { setSubmitting(false) }
+}
+
+
 
   if (loading) return (
     <div className="min-h-screen bg-[#111111] flex items-center justify-center">
