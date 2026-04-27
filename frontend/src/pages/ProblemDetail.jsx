@@ -667,10 +667,10 @@ const ProblemDetail = () => {
           <span className="text-[#e8e8e8] truncate max-w-[200px]">{problem.title}</span>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <button onClick={() => prevProblem && navigate(`/problems/${prevProblem.id}`)} disabled={!prevProblem} className={`w-[28px] h-[28px] flex items-center justify-center rounded-[4px] bg-[#2a2a2a] transition-colors ${prevProblem ? 'text-[#6b6b6b] hover:text-[#e8e8e8] hover:bg-[#333]' : 'text-[#3a3a3a] cursor-not-allowed'}`}>
+          <button onClick={() => prevProblem && navigate(`/problemset/${prevProblem.id}`)} disabled={!prevProblem} className={`w-[28px] h-[28px] flex items-center justify-center rounded-[4px] bg-[#2a2a2a] transition-colors ${prevProblem ? 'text-[#6b6b6b] hover:text-[#e8e8e8] hover:bg-[#333]' : 'text-[#3a3a3a] cursor-not-allowed'}`}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
-          <button onClick={() => nextProblem && navigate(`/problems/${nextProblem.id}`)} disabled={!nextProblem} className={`w-[28px] h-[28px] flex items-center justify-center rounded-[4px] bg-[#2a2a2a] transition-colors ${nextProblem ? 'text-[#6b6b6b] hover:text-[#e8e8e8] hover:bg-[#333]' : 'text-[#3a3a3a] cursor-not-allowed'}`}>
+          <button onClick={() => nextProblem && navigate(`/problemset/${nextProblem.id}`)} disabled={!nextProblem} className={`w-[28px] h-[28px] flex items-center justify-center rounded-[4px] bg-[#2a2a2a] transition-colors ${nextProblem ? 'text-[#6b6b6b] hover:text-[#e8e8e8] hover:bg-[#333]' : 'text-[#3a3a3a] cursor-not-allowed'}`}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
