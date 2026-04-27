@@ -526,7 +526,7 @@ const useVerticalResize = (containerRef, initialBottomPx = 280) => {
     }
   }, [containerRef])
 
-  return { bottomHeight, onMouseDown }
+  return { bottomHeight, setBottomHeight, onMouseDown }
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -547,7 +547,7 @@ const ProblemDetail = () => {
 
   // Ref on the right column so the resize hook can read its height
   const rightColRef = useRef(null)
-  const { bottomHeight, onMouseDown: onDividerMouseDown } = useVerticalResize(rightColRef, 280)
+  const { bottomHeight, setBottomHeight, onMouseDown: onDividerMouseDown } = useVerticalResize(rightColRef, 280)
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -571,7 +571,7 @@ const ProblemDetail = () => {
   const handleRun = async (code) => {
     if (!code.trim()) return
     setRunning(true); setRunResult(null); setSubmitResult(null)
-    try { setRunResult(await runCode({ source_code: code, language, problem_id: id, customTestCases })) }
+    try { setRunResult(await runCode({ source_code: code, language, problem_id: id, customTestCases })); setBottomHeight(window.innerHeight * 0.5) }
     catch (err) { console.error(err) }
     finally { setRunning(false) }
   }
@@ -584,7 +584,7 @@ const ProblemDetail = () => {
         submitCode({ source_code: code, language, problem_id: id }),
         runCode({ source_code: code, language, problem_id: id, customTestCases })
       ])
-      setSubmitResult({ ...submitRes, testResults: runRes.testResults })
+      setSubmitResult({ ...submitRes, testResults: runRes.testResults }); setBottomHeight(window.innerHeight * 0.5)
       setLeftTab('submissions')
     } catch (err) { console.error(err) }
     finally { setSubmitting(false) }
