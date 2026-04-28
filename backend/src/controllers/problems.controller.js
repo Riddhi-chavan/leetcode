@@ -4,7 +4,7 @@ import { prisma } from '../lib/db.js';
 import { wrapCode } from '../lib/codeWrapper.js';
 const { UserRole } = pkg;
 
-const generateTestCases = async (problem, language, count = 3) => {
+const generateTestCases = async (problem, language, count = 6) => {
   const refSolution = problem.referenceSolutions?.[language] || problem.referenceSolutions?.['javascript']
   if (!refSolution) return problem.testCases
 
@@ -13,6 +13,9 @@ const generateTestCases = async (problem, language, count = 3) => {
   if (!existingInput) return problem.testCases
 
   const needed = count - problem.testCases.length
+
+  // ✅ Fix: if no new cases needed, return early
+  if (needed <= 0) return problem.testCases.slice(0, count)
 
   const randomCases = Array.from({ length: needed }, () => {
     if ('nums' in existingInput && 'target' in existingInput) {
@@ -26,6 +29,9 @@ const generateTestCases = async (problem, language, count = 3) => {
     }
     return null
   }).filter(Boolean)
+
+  // ✅ Fix: if randomCases is empty after filtering, return early
+  if (randomCases.length === 0) return problem.testCases.slice(0, count)
 
   const submissions = randomCases.map(({ input }) => ({
     source_code: wrapCode(language, refSolution, input),
@@ -133,13 +139,11 @@ export const getAllProblems = async (req, res) => {
   try {
     const problems = await prisma.problem.findMany()
 
-    // fetch this user's best submission per problem in one query
     const submissions = await prisma.submission.findMany({
       where: { userId: req.user.id },
       select: { problemId: true, status: true },
     })
 
-    // per problem: ACCEPTED beats WRONG_ANSWER
     const statusMap = {}
     for (const sub of submissions) {
       if (sub.status === 'ACCEPTED') {
@@ -257,7 +261,12 @@ export const submitCode = async (req, res) => {
         const languageId = getLanguageId(language)
         if (!languageId) return res.status(400).json({ error: `Unsupported language: ${language}` })
 
-        const testCases = await generateTestCases(problem, language, 20)
+        const testCases = await generateTestCases(problem, language, 6)
+
+        // ✅ Fix: guard against empty test cases
+        if (!testCases || testCases.length === 0) {
+            return res.status(400).json({ error: "No test cases available for this problem" })
+        }
 
         const submissions = testCases.map(({ input, output }) => ({
             source_code: wrapCode(language, source_code, input),
@@ -287,7 +296,6 @@ export const submitCode = async (req, res) => {
         const allPassed   = passedCount === totalCount
         const firstFailed = testResults.find(r => !r.passed) || null
 
-        // ✅ THIS IS WHAT WAS MISSING — save to DB
         await prisma.submission.create({
             data: {
                 userId:      req.user.id,
