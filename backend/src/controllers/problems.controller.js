@@ -257,7 +257,6 @@ export const submitCode = async (req, res) => {
         const languageId = getLanguageId(language)
         if (!languageId) return res.status(400).json({ error: `Unsupported language: ${language}` })
 
-        // 3 stored + 17 random = 20 total, fits in one Judge0 batch
         const testCases = await generateTestCases(problem, language, 20)
 
         const submissions = testCases.map(({ input, output }) => ({
@@ -267,7 +266,6 @@ export const submitCode = async (req, res) => {
             expected_output: typeof output === 'object' ? JSON.stringify(output) : String(output),
         }))
 
-        // Single batch of 20 — no chunking needed
         const submissionResults = await submitBatch(submissions)
         const tokens  = submissionResults.map(r => r.token)
         const results = await pollBatchResults(tokens)
@@ -288,6 +286,21 @@ export const submitCode = async (req, res) => {
         const totalCount  = testResults.length
         const allPassed   = passedCount === totalCount
         const firstFailed = testResults.find(r => !r.passed) || null
+
+        // ✅ THIS IS WHAT WAS MISSING — save to DB
+        await prisma.submission.create({
+            data: {
+                userId:      req.user.id,
+                problemId:   problem_id,
+                language,
+                sourceCode:  source_code,
+                status:      allPassed ? 'ACCEPTED' : 'WRONG_ANSWER',
+                passedCount,
+                totalCount,
+                runtime:     results[0]?.time   ? `${results[0].time}ms`   : null,
+                memory:      results[0]?.memory ? `${results[0].memory}KB` : null,
+            },
+        })
 
         res.status(200).json({
             success: true,
