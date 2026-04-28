@@ -8,15 +8,17 @@ const StatPill = ({ label, count, color }) => (
 )
 
 const YourProgress = ({ problems, solved, total, diffColor, attempted }) => {
+    console.log("problems", problems)
     return (
         <div className="w-[260px] flex-shrink-0 flex flex-col gap-4">
 
             <div className="bg-[#1a1a1a] rounded-[10px] border border-[#2a2a2a] p-4">
                 <h3 className="text-[13px] font-medium text-[#e8e8e8] mb-3">Your Progress</h3>
                 <div className="flex gap-2 justify-between mb-4">
-                    <StatPill label="Easy" count={problems.filter(p => p.difficulty === 'Easy' && p.status === 'Solved').length} color="text-[#00b8a3]" />
-                    <StatPill label="Medium" count={problems.filter(p => p.difficulty === 'Medium' && p.status === 'Solved').length} color="text-[#ffc01e]" />
-                    <StatPill label="Hard" count={problems.filter(p => p.difficulty === 'Hard' && p.status === 'Solved').length} color="text-[#ff375f]" />
+
+                    <StatPill label="Easy" count={problems.filter(p => p.difficulty?.toUpperCase() === 'EASY' && p.status === 'Solved').length} color="text-[#00b8a3]" />
+                    <StatPill label="Medium" count={problems.filter(p => p.difficulty?.toUpperCase() === 'MEDIUM' && p.status === 'Solved').length} color="text-[#ffc01e]" />
+                    <StatPill label="Hard" count={problems.filter(p => p.difficulty?.toUpperCase() === 'HARD' && p.status === 'Solved').length} color="text-[#ff375f]" />
                 </div>
                 <div className="flex flex-col gap-1">
                     <div className="flex justify-between text-[11px] text-[#6b6b6b]">
@@ -48,18 +50,19 @@ const YourProgress = ({ problems, solved, total, diffColor, attempted }) => {
 
             <div className="bg-[#1a1a1a] rounded-[10px] border border-[#2a2a2a] p-4">
                 <h3 className="text-[13px] font-medium text-[#e8e8e8] mb-3">Difficulty</h3>
-                {['Easy', 'Medium', 'Hard'].map(d => {
+                {['EASY', 'MEDIUM', 'HARD'].map(d => {
                     const total_d = problems.filter(p => p.difficulty === d).length
                     const solved_d = problems.filter(p => p.difficulty === d && p.status === 'Solved').length
+                    const label = d.charAt(0) + d.slice(1).toLowerCase() // "Easy", "Medium", "Hard"
                     return (
                         <div key={d} className="mb-3 last:mb-0">
                             <div className="flex justify-between text-[11px] mb-1">
-                                <span className={diffColor(d)}>{d}</span>
+                                <span className={diffColor(d)}>{label}</span>
                                 <span className="text-[#6b6b6b]">{solved_d}/{total_d}</span>
                             </div>
                             <div className="h-[4px] rounded-full bg-[#2a2a2a] overflow-hidden">
                                 <div
-                                    className={`h-full rounded-full transition-all duration-700 ${d === 'Easy' ? 'bg-[#00b8a3]' : d === 'Medium' ? 'bg-[#ffc01e]' : 'bg-[#ff375f]'
+                                    className={`h-full rounded-full transition-all duration-700 ${d === 'EASY' ? 'bg-[#00b8a3]' : d === 'MEDIUM' ? 'bg-[#ffc01e]' : 'bg-[#ff375f]'
                                         }`}
                                     style={{ width: total_d ? `${(solved_d / total_d) * 100}%` : '0%' }}
                                 />

@@ -85,7 +85,10 @@ const ProblemDetail = () => {
       setLeftTab('submissions')
 
       // ✅ refetch so the problemset tick updates when user goes back
-      getAllProblems().then(setProblems).catch(() => { })
+      getAllProblems().then(updatedProblems => {
+        setProblems(updatedProblems)
+        onProblemsUpdate?.(updatedProblems) // notify parent
+      })
 
     } catch (err) { console.error(err) }
     finally { setSubmitting(false) }
