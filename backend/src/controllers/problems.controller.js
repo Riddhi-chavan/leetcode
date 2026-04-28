@@ -4,7 +4,7 @@ import { prisma } from '../lib/db.js';
 import { wrapCode } from '../lib/codeWrapper.js';
 const { UserRole } = pkg;
 
-const generateTestCases = async (problem, language, count = 6) => {
+const generateTestCases = async (problem, language, count = 3) => {
   const refSolution = problem.referenceSolutions?.[language] || problem.referenceSolutions?.['javascript']
   if (!refSolution) return problem.testCases
 
@@ -130,13 +130,35 @@ export const createProblem = async (req, res) => {
 }
 
 export const getAllProblems = async (req, res) => {
-    try {
-        const problems = await prisma.problem.findMany()
-        res.status(200).json({ success: true, problems })
-    } catch (error) {
-        console.error("Error fetching problems", error.message)
-        res.status(500).json({ error: "Failed to fetch problems" })
+  try {
+    const problems = await prisma.problem.findMany()
+
+    // fetch this user's best submission per problem in one query
+    const submissions = await prisma.submission.findMany({
+      where: { userId: req.user.id },
+      select: { problemId: true, status: true },
+    })
+
+    // per problem: ACCEPTED beats WRONG_ANSWER
+    const statusMap = {}
+    for (const sub of submissions) {
+      if (sub.status === 'ACCEPTED') {
+        statusMap[sub.problemId] = 'Solved'
+      } else if (!statusMap[sub.problemId]) {
+        statusMap[sub.problemId] = 'Attempted'
+      }
     }
+
+    const enriched = problems.map(p => ({
+      ...p,
+      status: statusMap[p.id] ?? 'Todo',
+    }))
+
+    res.status(200).json({ success: true, problems: enriched })
+  } catch (error) {
+    console.error('Error fetching problems', error.message)
+    res.status(500).json({ error: 'Failed to fetch problems' })
+  }
 }
 
 export const getProblem = async (req, res) => {
