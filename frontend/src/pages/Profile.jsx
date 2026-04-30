@@ -375,7 +375,7 @@ const EditModal = ({ user, onClose, onSave }) => {
 const ProfilePage = () => {
   const { userId } = useParams()
   const navigate   = useNavigate()
-  const { currentUser } =  useAuth()
+  const { currentUser , updateCurrentUser } =  useAuth()
   
 
   const [data, setData]       = useState(null)
@@ -400,6 +400,7 @@ const ProfilePage = () => {
   const handleSave = async (form) => {
     const res = await updateProfile(form)
     setData(d => ({ ...d, user: res.user }))
+    updateCurrentUser(res.user)
   }
 
   useEffect(() => {

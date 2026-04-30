@@ -14,8 +14,10 @@ export const AuthProvider = ({ children }) => {
             .finally(() => setAuthLoading(false))
     }, [])
 
+    const updateCurrentUser = (fields) => setCurrentUser(u => ({ ...u, ...fields }))
+
     return (
-        <AuthContext.Provider value={{ currentUser, setCurrentUser, authLoading }}>
+        <AuthContext.Provider value={{ currentUser, setCurrentUser, authLoading  , updateCurrentUser}}>
             {children}
         </AuthContext.Provider>
     )

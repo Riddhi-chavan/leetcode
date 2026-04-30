@@ -72,8 +72,7 @@ const Navbar = ({ setSearch, search }) => {
         <div className="relative flex-shrink-0" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className="w-[32px] h-[32px] rounded-full overflow-hidden flex items-center justify-center
-                       bg-[#ffa116] text-black text-[13px] font-bold
+            className="w-[32px] h-[32px] rounded-full overflow-hidden flex items-center justify-center text-black text-[13px] font-bold
                        hover:ring-2 hover:ring-[#ffa116]/60 transition-all cursor-pointer"
           >
             {currentUser?.avatar ? (
