@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo , useRef} from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { getProfile, updateProfile } from '../../api/profile'
 import { useAuth } from '../context/AuthContext'
+import { useSearchParams } from 'react-router-dom'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -375,11 +376,14 @@ const ProfilePage = () => {
   const { userId } = useParams()
   const navigate   = useNavigate()
   const { currentUser } =  useAuth()
+  
 
   const [data, setData]       = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(null)
   const [editing, setEditing] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+
 
   const targetId  = userId ?? currentUser?.id
   const isOwnProfile = currentUser?.id === targetId
@@ -397,6 +401,13 @@ const ProfilePage = () => {
     const res = await updateProfile(form)
     setData(d => ({ ...d, user: res.user }))
   }
+
+  useEffect(() => {
+  if (searchParams.get('edit') === 'true') {
+    setEditing(true)
+    setSearchParams({}) // clean the URL
+  }
+}, [searchParams])
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) return (

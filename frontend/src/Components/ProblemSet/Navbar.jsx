@@ -1,13 +1,13 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const Navbar = ({ setSearch, search }) => {
   const navigate = useNavigate()
   const { currentUser } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
 
-
-  // Derive initials as fallback when no avatar URL
   const initials = currentUser
     ? (currentUser.name ?? currentUser.email ?? '?')
         .split(' ')
@@ -17,9 +17,16 @@ const Navbar = ({ setSearch, search }) => {
         .toUpperCase()
     : 'U'
 
-  const handleAvatarClick = () => {
-    if (currentUser?.id) navigate(`/profile/${currentUser.id}`)
-  }
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   return (
     <nav className="h-[50px] bg-[#1a1a1a] border-b border-[#2a2a2a] flex items-center px-6 gap-6 sticky top-0 z-50">
@@ -61,24 +68,63 @@ const Navbar = ({ setSearch, search }) => {
           />
         </div>
 
-        {/* Avatar / initials */}
-        <button
-          onClick={handleAvatarClick}
-          title="View profile"
-          className="w-[32px] h-[32px] rounded-full overflow-hidden flex items-center justify-center
-                     bg-[#ffa116] text-black text-[13px] font-bold
-                     hover:ring-2 hover:ring-[#ffa116]/60 transition-all cursor-pointer flex-shrink-0"
-        >
-          {currentUser?.avatar ? (
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.name ?? 'avatar'}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            initials
+        {/* Avatar with dropdown */}
+        <div className="relative flex-shrink-0" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            className="w-[32px] h-[32px] rounded-full overflow-hidden flex items-center justify-center
+                       bg-[#ffa116] text-black text-[13px] font-bold
+                       hover:ring-2 hover:ring-[#ffa116]/60 transition-all cursor-pointer"
+          >
+            {currentUser?.avatar ? (
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name ?? 'avatar'}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              initials
+            )}
+          </button>
+
+          {/* Dropdown */}
+          {menuOpen && (
+            <div className="absolute right-0 top-[40px] w-[160px] bg-[#1e1e1e] border border-[#2a2a2a] rounded-[8px] shadow-xl overflow-hidden z-50">
+              {/* User info header */}
+              <div className="px-3 py-2.5 border-b border-[#2a2a2a]">
+                <p className="text-[12px] font-medium text-[#e8e8e8] truncate">
+                  {currentUser?.name ?? 'Anonymous'}
+                </p>
+                <p className="text-[11px] text-[#6b6b6b] truncate">
+                  {currentUser?.email}
+                </p>
+              </div>
+
+              {/* Options */}
+              <button
+                onClick={() => { setMenuOpen(false); navigate(`/profile/${currentUser?.id}`) }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-[#c8c8c8] hover:bg-[#2a2a2a] hover:text-[#e8e8e8] transition-colors text-left"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                View Profile
+              </button>
+
+              <button
+                onClick={() => { setMenuOpen(false); navigate(`/profile/${currentUser?.id}?edit=true`) }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-[#c8c8c8] hover:bg-[#2a2a2a] hover:text-[#e8e8e8] transition-colors text-left"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit Profile
+              </button>
+            </div>
           )}
-        </button>
+        </div>
       </div>
     </nav>
   )
