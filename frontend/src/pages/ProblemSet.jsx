@@ -181,7 +181,7 @@ const ProblemSet = () => {
         <div className="min-h-screen bg-[#111111] text-[#e8e8e8] flex flex-col">
 
             {/* Navbar */}
-            <Navbar setSearch={setSearch} search={search} />
+            <Navbar search={search} setSearch={setSearch} />
 
             <div className="flex flex-1 max-w-[1200px] mx-auto w-full px-4 py-6 gap-6">
 

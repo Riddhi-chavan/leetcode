@@ -4,6 +4,7 @@ import leetcodeLoginLogo from "../assets/leetcodeLoginLogo.svg"
 import Footer from '../Components/Footer'
 import { useNavigate } from 'react-router-dom'
 import { loginUser } from '../../api/Auth'
+import { useAuth } from '../context/AuthContext'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -11,6 +12,7 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { setCurrentUser } = useAuth()
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -24,7 +26,8 @@ const Login = () => {
     }
     setLoading(true)
     try {
-      await loginUser(formData.email, formData.password)
+      const data = await loginUser(formData.email, formData.password)
+      setCurrentUser(data.user)
       navigate('/problemset/')
     } catch (err) {
       setError(err.message)

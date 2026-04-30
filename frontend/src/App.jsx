@@ -6,6 +6,7 @@ import { Routes, Route } from 'react-router-dom'
 import Register from './pages/Register.jsx'
 import ProblemSet from './pages/ProblemSet.jsx'
 import ProblemDetail from './pages/ProblemDetail.jsx'
+import ProfilePage from './pages/Profile.jsx'
 
 const App = () => {
   return (
@@ -14,7 +15,8 @@ const App = () => {
       <Route path="/accounts/register/" element={<Register />} />
       <Route path="/problemset/" element={<ProblemSet />} />
       <Route path="/problemset/:id" element={<ProblemDetail />} />
-      <Route path="/" element={<Home />} />
+      <Route path="/problemset/:id" element={<ProblemDetail />} />
+      <Route path="/profile/:id" element={<ProfilePage />} />
     </Routes>
   )
 }

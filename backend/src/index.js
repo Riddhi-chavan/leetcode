@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes.js";
 import problemRoutes from "./routes/problems.routes.js";
 import cors from 'cors'
 import submissionRoutes from "./routes/submission.routes.js";
+import profileRoutes from "./routes/profile.routes.js";
 
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(cors({
 app.use("/api/v1/auth", authRoutes)
 app.use("/api/v1/problems", problemRoutes)
 app.use('/api/v1/submissions', submissionRoutes);
+app.use('/api/v1/profile', profileRoutes);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port http://localhost:${process.env.PORT}`)

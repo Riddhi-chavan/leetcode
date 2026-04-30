@@ -4,6 +4,7 @@ import leetcodeLoginLogo from "../assets/leetcodeLoginLogo.svg"
 import Footer from '../Components/Footer'
 import { useNavigate } from 'react-router-dom'
 import { registerUser } from '../../api/Auth'
+import { useAuth } from '../context/AuthContext'
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false)
@@ -17,6 +18,7 @@ const Register = () => {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
+    const { setCurrentUser } = useAuth()
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -32,7 +34,8 @@ const Register = () => {
 
         setLoading(true)
         try {
-            await registerUser(formData.name, formData.email, formData.password)
+           const data = await registerUser(formData.name, formData.email, formData.password)
+            setCurrentUser(data.user)
             navigate('/problemset/')
         } catch (err) {
             setError(err.message)

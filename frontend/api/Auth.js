@@ -36,3 +36,12 @@ export const loginUser = async (email, password) => {
 
     return data;
 };
+
+export const checkAuth = async () => {
+    const response = await fetch('http://localhost:3000/api/v1/auth/check', {
+        credentials: 'include',
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Not authenticated');
+    return data; // { user: { id, email, name, role, image } }
+};
