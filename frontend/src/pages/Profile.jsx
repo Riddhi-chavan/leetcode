@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo , useRef} from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { getProfile, updateProfile } from '../../api/profile'
 import { useAuth } from '../context/AuthContext'
@@ -66,7 +66,7 @@ function buildGrid(activityMap) {
 }
 
 function heatColor(count) {
-  if (count === 0) return '#1a1a1a'
+  if (count === 0) return '#2a2a2a'
   if (count === 1) return '#0e4429'
   if (count <= 3)  return '#006d32'
   if (count <= 6)  return '#26a641'
@@ -86,8 +86,9 @@ function getMonthLabels(weeks) {
   return labels
 }
 
-const Heatmap = ({ activityMap, totalDays }) => {
+const Heatmap = ({ activityMap }) => {
   const [tooltip, setTooltip] = useState(null)
+  const containerRef = useRef(null)
   const { weeks } = useMemo(() => buildGrid(activityMap), [activityMap])
   const monthLabels = useMemo(() => getMonthLabels(weeks), [weeks])
   const totalSubmissions = useMemo(
@@ -99,8 +100,25 @@ const Heatmap = ({ activityMap, totalDays }) => {
     [activityMap]
   )
 
+  const totalWeeks = weeks.length
+  const gap = 2
+  const dayLabelWidth = 28
+  const [cellSize, setCellSize] = useState(11)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const observer = new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width
+      const available = width - dayLabelWidth - (totalWeeks - 1) * gap
+      setCellSize(Math.max(4, Math.floor(available / totalWeeks)))
+    })
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [totalWeeks])
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" ref={containerRef}>
+      {/* Header */}
       <div className="flex items-center justify-between mb-1">
         <span className="text-[13px] font-medium text-[#e8e8e8]">Submission Activity</span>
         <span className="text-[11px] text-[#6b6b6b]">
@@ -108,13 +126,13 @@ const Heatmap = ({ activityMap, totalDays }) => {
         </span>
       </div>
 
-      <div className="relative overflow-x-auto">
+      <div className="relative">
         {/* Month labels */}
-        <div className="flex gap-[3px] mb-1 ml-[28px]">
+        <div className="flex mb-1" style={{ marginLeft: dayLabelWidth, gap }}>
           {weeks.map((_, i) => {
             const lbl = monthLabels.find(m => m.col === i)
             return (
-              <div key={i} className="w-[11px] flex-shrink-0 text-[9px] text-[#6b6b6b]">
+              <div key={i} style={{ width: cellSize, flexShrink: 0, fontSize: 9, color: '#6b6b6b' }}>
                 {lbl ? lbl.label : ''}
               </div>
             )
@@ -123,23 +141,33 @@ const Heatmap = ({ activityMap, totalDays }) => {
 
         <div className="flex gap-0">
           {/* Day labels */}
-          <div className="flex flex-col gap-[3px] mr-[4px] w-[24px]">
+          <div className="flex flex-col mr-1" style={{ width: dayLabelWidth, gap }}>
             {DAYS.map((d, i) => (
-              <div key={i} className="h-[11px] text-[9px] text-[#6b6b6b] flex items-center justify-end pr-1">
+              <div
+                key={i}
+                style={{ height: cellSize, fontSize: 9, color: '#6b6b6b' }}
+                className="flex items-center justify-end pr-1"
+              >
                 {d}
               </div>
             ))}
           </div>
 
           {/* Grid */}
-          <div className="flex gap-[3px]">
+          <div className="flex" style={{ gap }}>
             {weeks.map((week, wi) => (
-              <div key={wi} className="flex flex-col gap-[3px]">
+              <div key={wi} className="flex flex-col" style={{ gap }}>
                 {week.map((cell) => (
                   <div
                     key={cell.date}
-                    className="w-[11px] h-[11px] rounded-[2px] cursor-pointer transition-opacity hover:opacity-80 relative"
-                    style={{ background: cell.future ? 'transparent' : heatColor(cell.count) }}
+                    style={{
+                      width: cellSize,
+                      height: cellSize,
+                      borderRadius: 2,
+                      flexShrink: 0,
+                      background: cell.future ? 'transparent' : heatColor(cell.count),
+                      cursor: 'pointer',
+                    }}
                     onMouseEnter={(e) => setTooltip({ ...cell, x: e.clientX, y: e.clientY })}
                     onMouseLeave={() => setTooltip(null)}
                   />
@@ -151,10 +179,10 @@ const Heatmap = ({ activityMap, totalDays }) => {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-1 mt-1 ml-[28px]">
+      <div className="flex items-center gap-1 mt-1" style={{ marginLeft: dayLabelWidth }}>
         <span className="text-[9px] text-[#6b6b6b] mr-1">Less</span>
-        {['#1a1a1a', '#0e4429', '#006d32', '#26a641', '#39d353'].map(c => (
-          <div key={c} className="w-[10px] h-[10px] rounded-[2px]" style={{ background: c }} />
+        {['#2a2a2a', '#0e4429', '#006d32', '#26a641', '#39d353'].map(c => (
+          <div key={c} style={{ width: 10, height: 10, borderRadius: 2, background: c }} />
         ))}
         <span className="text-[9px] text-[#6b6b6b] ml-1">More</span>
       </div>
