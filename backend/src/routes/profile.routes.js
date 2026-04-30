@@ -4,7 +4,7 @@ import { getProfile, updateProfile } from '../controllers/profile.controller.js'
 
 const profileRoutes = Router()
 
-profileRoutes.get('/:userId',      getProfile)           // public — anyone can view
-profileRoutes.patch('/update',     authenticate, updateProfile)  // private — own profile only
+profileRoutes.patch('/update', authenticate, updateProfile)  // ← specific first
+profileRoutes.get('/:userId', getProfile)                    // ← wildcard last
 
 export default profileRoutes

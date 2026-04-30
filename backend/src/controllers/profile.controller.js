@@ -25,7 +25,7 @@ export const getProfile = async (req, res) => {
 
     // ── All accepted submissions (unique problems solved) ────────────────────
     const acceptedSubmissions = await prisma.submission.findMany({
-      where: { userId, status: 'Accepted' },
+      where: { userId, status: 'ACCEPTED' }, 
       select: {
         problemId: true,
         createdAt: true,
@@ -82,7 +82,7 @@ export const getProfile = async (req, res) => {
     const totalSubmissions = await prisma.submission.count({ where: { userId } })
 
     // ── Acceptance rate ───────────────────────────────────────────────────────
-    const totalAccepted = await prisma.submission.count({ where: { userId, status: 'Accepted' } })
+    const totalAccepted = await prisma.submission.count({  where: { userId, status: 'ACCEPTED' } })
     const acceptanceRate = totalSubmissions > 0
       ? Math.round((totalAccepted / totalSubmissions) * 100)
       : 0
