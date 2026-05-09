@@ -126,16 +126,33 @@ export const updateProfile = async (req, res) => {
         ...(website  !== undefined && { website }),
         ...(avatar   !== undefined && { avatar }),
       },
-      select: {
-        id: true, name: true, email: true,
-        avatar: true, bio: true, github: true,
-        linkedin: true, website: true,
-      },
+     select: {
+    id: true, name: true, email: true,
+    avatar: true,                                // ✅ and this
+    bio: true, github: true,
+    linkedin: true, website: true,
+  },
     })
 
     res.status(200).json({ success: true, user: updated })
   } catch (error) {
     console.error('Error updating profile:', error)
     res.status(500).json({ error: 'Failed to update profile' })
+  }
+}
+
+export const uploadAvatar = async (req, res) => {  
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+
+  try {
+    const updated = await prisma.user.update({
+      where: { id: req.user.id },
+      data:  { avatar: req.file.path },
+      select: { id: true, avatar: true },
+    })
+    res.status(200).json({ success: true, avatarUrl: updated.avatar })
+  } catch (error) {
+    console.error('Avatar upload error:', error)
+    res.status(500).json({ error: error.message })
   }
 }

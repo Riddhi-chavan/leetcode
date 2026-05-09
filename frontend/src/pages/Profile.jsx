@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo , useRef} from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { getProfile, updateProfile } from '../../api/profile'
+import { getProfile, updateProfile, uploadProfileAvatar } from '../../api/profile'
 import { useAuth } from '../context/AuthContext'
 import { useSearchParams } from 'react-router-dom'
 
@@ -296,15 +296,37 @@ const EditModal = ({ user, onClose, onSave }) => {
     website:  user.website  ?? '',
     avatar:   user.avatar   ?? '',
   })
-  const [saving, setSaving] = useState(false)
-
+  const [avatarFile, setAvatarFile] = useState(null)      // ✅ raw file, not uploaded yet
+  const [previewUrl, setPreviewUrl] = useState(user.avatar ?? null)  // ✅ local preview
+  const [saving,   setSaving]   = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef(null)
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
+
+  const handleFile = (file) => {
+    if (!file || !file.type.startsWith('image/')) return
+    setAvatarFile(file)                                   // ✅ just store the file
+    setPreviewUrl(URL.createObjectURL(file))              // ✅ instant local preview, no upload yet
+  }
+
+  const onDrop = (e) => {
+    e.preventDefault()
+    setDragOver(false)
+    handleFile(e.dataTransfer.files[0])
+  }
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      await onSave(form)
-      onClose()
+       let finalForm = { ...form }
+
+    if (avatarFile) {
+      const { avatarUrl } = await uploadProfileAvatar(avatarFile)
+      finalForm.avatar = avatarUrl          // ✅ this sets it locally
+    }
+
+    await onSave(finalForm)                 // → calls updateProfile(finalForm)
+    onClose()
     } catch (e) {
       console.error(e)
     } finally {
@@ -324,12 +346,56 @@ const EditModal = ({ user, onClose, onSave }) => {
         </div>
 
         <div className="p-5 flex flex-col gap-3">
+          {/* Avatar drop zone */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] text-[#6b6b6b] uppercase tracking-wider">Profile Picture</label>
+            <div
+              className={`relative flex flex-col items-center justify-center gap-2 rounded-[8px] border-2 border-dashed transition-colors cursor-pointer
+                ${dragOver ? 'border-[#ffa116] bg-[#ffa116]/5' : 'border-[#2a2a2a] hover:border-[#444]'}`}
+              style={{ height: 120 }}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={onDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {previewUrl ? (
+                <>
+                  <img
+                    src={previewUrl}
+                    alt="avatar preview"
+                    className="w-[72px] h-[72px] rounded-full object-cover border-2 border-[#2a2a2a]"
+                  />
+                  <span className="text-[10px] text-[#6b6b6b]">
+                    {avatarFile ? '✓ Ready to save' : 'Click or drop to replace'}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="1.5">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span className="text-[12px] text-[#6b6b6b]">Drop image here or <span className="text-[#ffa116]">browse</span></span>
+                  <span className="text-[10px] text-[#4b4b4b]">PNG, JPG, WEBP up to 5MB</span>
+                </>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleFile(e.target.files[0])}
+              />
+            </div>
+          </div>
+
+          {/* Text fields */}
           {[
-            { label: 'Display Name', key: 'name', placeholder: 'Your name' },
-            { label: 'Avatar URL',   key: 'avatar', placeholder: 'https://...' },
-            { label: 'GitHub',       key: 'github', placeholder: 'github.com/username' },
+            { label: 'Display Name', key: 'name',     placeholder: 'Your name' },
+            { label: 'GitHub',       key: 'github',   placeholder: 'github.com/username' },
             { label: 'LinkedIn',     key: 'linkedin', placeholder: 'linkedin.com/in/username' },
-            { label: 'Website',      key: 'website', placeholder: 'https://yoursite.com' },
+            { label: 'Website',      key: 'website',  placeholder: 'https://yoursite.com' },
           ].map(({ label, key, placeholder }) => (
             <div key={key} className="flex flex-col gap-1">
               <label className="text-[11px] text-[#6b6b6b] uppercase tracking-wider">{label}</label>
@@ -341,6 +407,7 @@ const EditModal = ({ user, onClose, onSave }) => {
               />
             </div>
           ))}
+
           <div className="flex flex-col gap-1">
             <label className="text-[11px] text-[#6b6b6b] uppercase tracking-wider">Bio</label>
             <textarea
@@ -362,7 +429,7 @@ const EditModal = ({ user, onClose, onSave }) => {
             disabled={saving}
             className="px-4 py-1.5 bg-[#ffa116] text-black text-[12px] font-medium rounded-[6px] hover:bg-[#ffb84d] transition-colors disabled:opacity-50"
           >
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? 'Uploading & Saving…' : 'Save'}
           </button>
         </div>
       </div>
@@ -398,10 +465,10 @@ const ProfilePage = () => {
   }, [targetId])
 
   const handleSave = async (form) => {
-    const res = await updateProfile(form)
-    setData(d => ({ ...d, user: res.user }))
-    updateCurrentUser(res.user)
-  }
+  const res = await updateProfile(form)    // PATCH sends avatar in body ✅
+  setData(d => ({ ...d, user: res.user }))
+  updateCurrentUser(res.user)              // ← but does res.user include avatar?
+}
 
   useEffect(() => {
   if (searchParams.get('edit') === 'true') {
