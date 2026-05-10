@@ -113,3 +113,38 @@ export const getMyRoleRequest = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch status' })
   }
 }
+
+// DEMOTE USER (ADMIN → USER)
+export const changeUserRole = async (req, res) => {
+  const { userId, newRole } = req.body;
+
+  try {
+    // 1. Update the user's role
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { role: newRole },
+    });
+
+    // 2. If demoting to USER, reject their RoleRequest (if one exists)
+    if (newRole === UserRole.USER) {
+      await prisma.roleRequest.updateMany({
+        where: {
+          userId,
+          status: { in: ['APPROVED', 'PENDING'] }, // reject either state
+        },
+        data: {
+          status: 'REJECTED',
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `User role updated to ${newRole}`,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Role Change Error:", error);
+    res.status(500).json({ error: "Failed to change role" });
+  }
+};

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { getRoleRequests, reviewRoleRequest } from '../../../api/roleRequests'
+import RequestsTab from './RequestsTab'
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 const fetchProblems = async () => {
@@ -262,144 +263,7 @@ const ProblemsTab = ({ navigate }) => {
 }
 
 // ── Requests tab ──────────────────────────────────────────────────────────────
-const RequestsTab = () => {
-  const [requests, setRequests] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [filter, setFilter]     = useState('PENDING')
-  const [acting, setActing]     = useState(null) // id being actioned
-
-  useEffect(() => {
-    setLoading(true)
-    getRoleRequests(filter)
-      .then(data => setRequests(data.requests))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [filter])
-
-  const handleReview = async (id, action) => {
-    setActing(id)
-    try {
-      await reviewRoleRequest(id, action)
-      setRequests(r => r.filter(req => req.id !== id))
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setActing(null)
-    }
-  }
-
-  const statusStyle = {
-    PENDING:  'bg-[#ffc01e]/10 text-[#ffc01e] border-[#ffc01e]/25',
-    APPROVED: 'bg-[#00b8a3]/10 text-[#00b8a3] border-[#00b8a3]/25',
-    REJECTED: 'bg-[#ff375f]/10 text-[#ff375f] border-[#ff375f]/25',
-  }
-
-  return (
-    <div className="flex flex-col gap-5">
-      {/* Filter tabs */}
-      <div className="flex gap-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-[10px] p-1 w-fit">
-        {['PENDING', 'APPROVED', 'REJECTED'].map(s => (
-          <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`px-4 py-1.5 rounded-[7px] text-[12px] font-medium transition-all ${
-              filter === s
-                ? 'bg-[#2a2a2a] text-[#e8e8e8]'
-                : 'text-[#6b6b6b] hover:text-[#e8e8e8]'
-            }`}
-          >
-            {s.charAt(0) + s.slice(1).toLowerCase()}
-          </button>
-        ))}
-      </div>
-
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-[10px] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#2a2a2a]">
-          <span className="text-[13px] font-medium text-[#e8e8e8]">
-            {filter.charAt(0) + filter.slice(1).toLowerCase()} Requests
-          </span>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-16 gap-3">
-            <div className="w-5 h-5 border-2 border-[#ffa116] border-t-transparent rounded-full animate-spin" />
-            <span className="text-[12px] text-[#6b6b6b]">Loading requests...</span>
-          </div>
-        ) : requests.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-1">
-            <span className="text-[13px] text-[#6b6b6b]">No {filter.toLowerCase()} requests</span>
-          </div>
-        ) : (
-          <div className="divide-y divide-[#1e1e1e]">
-            {requests.map(req => (
-              <div key={req.id} className="p-5 flex gap-4 items-start hover:bg-[#1e1e1e] transition-colors">
-                {/* Avatar */}
-                <div className="w-[36px] h-[36px] rounded-full flex-shrink-0 overflow-hidden">
-                  {req.user.avatar ? (
-                    <img src={req.user.avatar} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-[#2a2a2a] flex items-center justify-center text-[12px] font-bold text-[#6b6b6b]">
-                      {(req.user.name ?? req.user.email ?? '?')[0].toUpperCase()}
-                    </div>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[13px] font-medium text-[#e8e8e8]">
-                      {req.user.name ?? 'Anonymous'}
-                    </span>
-                    <span className="text-[11px] text-[#4b4b4b]">{req.user.email}</span>
-                    <span className={`ml-auto text-[10px] px-[6px] py-[2px] rounded-[4px] border font-medium ${statusStyle[req.status]}`}>
-                      {req.status.charAt(0) + req.status.slice(1).toLowerCase()}
-                    </span>
-                  </div>
-                  <p className="text-[12px] text-[#6b6b6b] leading-relaxed mt-1 line-clamp-3">
-                    {req.reason}
-                  </p>
-                  <div className="flex items-center gap-4 mt-3">
-                    <span className="text-[11px] text-[#4b4b4b]">
-                      Applied {timeAgo(req.createdAt)}
-                    </span>
-                    {req.status === 'PENDING' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleReview(req.id, 'approve')}
-                          disabled={acting === req.id}
-                          className="flex items-center gap-1.5 px-3 py-1 rounded-[5px] bg-[#00b8a3]/10 border border-[#00b8a3]/25 text-[#00b8a3] text-[11px] font-medium hover:bg-[#00b8a3]/20 transition-all disabled:opacity-50"
-                        >
-                          {acting === req.id ? (
-                            <div className="w-3 h-3 border border-[#00b8a3]/40 border-t-[#00b8a3] rounded-full animate-spin" />
-                          ) : (
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                          )}
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleReview(req.id, 'reject')}
-                          disabled={acting === req.id}
-                          className="flex items-center gap-1.5 px-3 py-1 rounded-[5px] bg-[#ff375f]/10 border border-[#ff375f]/25 text-[#ff375f] text-[11px] font-medium hover:bg-[#ff375f]/20 transition-all disabled:opacity-50"
-                        >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                          </svg>
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
+<RequestsTab/>
 
 // ── Main dashboard ────────────────────────────────────────────────────────────
 const AdminDashboard = () => {

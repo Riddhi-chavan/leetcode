@@ -1,10 +1,5 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// FILE 3: Replace the RequestsTab component inside AdminDashboard.jsx
-// with this version — live refetch after approve/reject, no page reload needed
-// ─────────────────────────────────────────────────────────────────────────────
-
 import React, { useState, useEffect, useCallback } from 'react'
-import { getRoleRequests, reviewRoleRequest } from '../../api/roleRequests'
+import { getRoleRequests, reviewRoleRequest } from '../../../api/roleRequests'
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime()
