@@ -326,3 +326,55 @@ export const submitCode = async (req, res) => {
         res.status(500).json({ error: "Failed to submit code" })
     }
 }
+
+export const updateProblem = async (req, res) => {
+  const { id } = req.params
+  const {
+    title, description, difficulty, tags,
+    examples, constraints, hints, editorial,
+    testCases, codeSnippets, referenceSolutions
+  } = req.body
+
+  try {
+    const problem = await prisma.problem.findUnique({ where: { id } })
+    if (!problem) return res.status(404).json({ error: 'Problem not found' })
+
+    const updated = await prisma.problem.update({
+      where: { id },
+      data: {
+        ...(title && { title }),
+        ...(description && { description }),
+        ...(difficulty && { difficulty }),
+        ...(tags && { tags }),
+        ...(examples && { examples }),
+        ...(constraints && { constraints }),
+        ...(hints !== undefined && { hints }),
+        ...(editorial !== undefined && { editorial }),
+        ...(testCases && { testCases }),
+        ...(codeSnippets && { codeSnippets }),
+        ...(referenceSolutions && { referenceSolutions }),
+      }
+    })
+
+    res.status(200).json({ success: true, message: 'Problem updated', problem: updated })
+  } catch (error) {
+    console.error('Error updating problem', error)
+    res.status(500).json({ error: 'Failed to update problem' })
+  }
+}
+
+export const deleteProblem = async (req, res) => {
+  const { id } = req.params
+
+  try {
+    const problem = await prisma.problem.findUnique({ where: { id } })
+    if (!problem) return res.status(404).json({ error: 'Problem not found' })
+
+    await prisma.problem.delete({ where: { id } })
+
+    res.status(200).json({ success: true, message: 'Problem deleted' })
+  } catch (error) {
+    console.error('Error deleting problem', error)
+    res.status(500).json({ error: 'Failed to delete problem' })
+  }
+}

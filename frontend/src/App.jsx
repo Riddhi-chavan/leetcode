@@ -7,6 +7,9 @@ import Register from './pages/Register.jsx'
 import ProblemSet from './pages/ProblemSet.jsx'
 import ProblemDetail from './pages/ProblemDetail.jsx'
 import ProfilePage from './pages/Profile.jsx'
+import AdminRoute from './Components/Admin/AdminRoute.jsx'
+import CreateProblem from './Components/Admin/CreateProblem.jsx'
+import AdminDashboard from './Components/Admin/Admindashboard.jsx'
 
 const App = () => {
   return (
@@ -17,6 +20,12 @@ const App = () => {
       <Route path="/problemset/:id" element={<ProblemDetail />} />
       <Route path="/problemset/:id" element={<ProblemDetail />} />
       <Route path="/profile/:id" element={<ProfilePage />} />
+      <Route path="/admin/create-problem" element={
+        <AdminRoute><CreateProblem /></AdminRoute>
+      } />
+      <Route path="/admin/dashboard" element={
+        <AdminRoute><AdminDashboard/></AdminRoute>
+      } />
     </Routes>
   )
 }

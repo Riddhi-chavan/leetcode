@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useMemo , useRef} from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { getProfile, updateProfile, uploadProfileAvatar } from '../../api/profile'
 import { useAuth } from '../context/AuthContext'
 import { useSearchParams } from 'react-router-dom'
+import ProblemSetterRequest from "../Components/Admin/ProblemSetterRequest"
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 const DIFF_COLOR = { EASY: '#00b8a3', MEDIUM: '#ffc01e', HARD: '#ff375f' }
-const DIFF_BG    = {
-  EASY:   'bg-[#00b8a3]/10 text-[#00b8a3] border border-[#00b8a3]/20',
+const DIFF_BG = {
+  EASY: 'bg-[#00b8a3]/10 text-[#00b8a3] border border-[#00b8a3]/20',
   MEDIUM: 'bg-[#ffc01e]/10 text-[#ffc01e] border border-[#ffc01e]/20',
-  HARD:   'bg-[#ff375f]/10 text-[#ff375f] border border-[#ff375f]/20',
+  HARD: 'bg-[#ff375f]/10 text-[#ff375f] border border-[#ff375f]/20',
 }
 const toTitle = (s) => s.charAt(0) + s.slice(1).toLowerCase()
 
@@ -39,8 +40,8 @@ function formatDate(iso) {
 
 // ─── Heatmap ──────────────────────────────────────────────────────────────────
 
-const DAYS   = ['', 'Mon', '', 'Wed', '', 'Fri', '']
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const DAYS = ['', 'Mon', '', 'Wed', '', 'Fri', '']
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 function buildGrid(activityMap) {
   const today = new Date()
@@ -69,8 +70,8 @@ function buildGrid(activityMap) {
 function heatColor(count) {
   if (count === 0) return '#2a2a2a'
   if (count === 1) return '#0e4429'
-  if (count <= 3)  return '#006d32'
-  if (count <= 6)  return '#26a641'
+  if (count <= 3) return '#006d32'
+  if (count <= 6) return '#26a641'
   return '#39d353'
 }
 
@@ -206,15 +207,15 @@ const Heatmap = ({ activityMap }) => {
 // ─── Donut ring ───────────────────────────────────────────────────────────────
 
 const DonutRing = ({ solved, total, color, size = 56, stroke = 5 }) => {
-  const r     = (size - stroke) / 2
-  const circ  = 2 * Math.PI * r
-  const pct   = total > 0 ? solved / total : 0
-  const dash  = pct * circ
+  const r = (size - stroke) / 2
+  const circ = 2 * Math.PI * r
+  const pct = total > 0 ? solved / total : 0
+  const dash = pct * circ
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#2a2a2a" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#2a2a2a" strokeWidth={stroke} />
       <circle
-        cx={size/2} cy={size/2} r={r} fill="none"
+        cx={size / 2} cy={size / 2} r={r} fill="none"
         stroke={color} strokeWidth={stroke}
         strokeDasharray={`${dash} ${circ}`}
         strokeLinecap="round"
@@ -234,22 +235,22 @@ const BigRing = ({ stats }) => {
   const size = 120, stroke = 8
   const r = (size - stroke) / 2
   const circ = 2 * Math.PI * r
-  const easyDash   = grandTotal > 0 ? (easy.solved   / grandTotal) * circ : 0
+  const easyDash = grandTotal > 0 ? (easy.solved / grandTotal) * circ : 0
   const mediumDash = grandTotal > 0 ? (medium.solved / grandTotal) * circ : 0
-  const hardDash   = grandTotal > 0 ? (hard.solved   / grandTotal) * circ : 0
+  const hardDash = grandTotal > 0 ? (hard.solved / grandTotal) * circ : 0
 
-  const easyOffset   = 0
+  const easyOffset = 0
   const mediumOffset = -(easyDash)
-  const hardOffset   = -(easyDash + mediumDash)
+  const hardOffset = -(easyDash + mediumDash)
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', position: 'absolute' }}>
         {/* Track */}
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#2a2a2a" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#2a2a2a" strokeWidth={stroke} />
         {/* Easy */}
         {easyDash > 0 && (
-          <circle cx={size/2} cy={size/2} r={r} fill="none"
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none"
             stroke="#00b8a3" strokeWidth={stroke}
             strokeDasharray={`${easyDash} ${circ}`}
             strokeDashoffset={easyOffset}
@@ -258,7 +259,7 @@ const BigRing = ({ stats }) => {
         )}
         {/* Medium */}
         {mediumDash > 0 && (
-          <circle cx={size/2} cy={size/2} r={r} fill="none"
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none"
             stroke="#ffc01e" strokeWidth={stroke}
             strokeDasharray={`${mediumDash} ${circ}`}
             strokeDashoffset={mediumOffset}
@@ -267,7 +268,7 @@ const BigRing = ({ stats }) => {
         )}
         {/* Hard */}
         {hardDash > 0 && (
-          <circle cx={size/2} cy={size/2} r={r} fill="none"
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none"
             stroke="#ff375f" strokeWidth={stroke}
             strokeDasharray={`${hardDash} ${circ}`}
             strokeDashoffset={hardOffset}
@@ -289,16 +290,16 @@ const BigRing = ({ stats }) => {
 
 const EditModal = ({ user, onClose, onSave }) => {
   const [form, setForm] = useState({
-    name:     user.name     ?? '',
-    bio:      user.bio      ?? '',
-    github:   user.github   ?? '',
+    name: user.name ?? '',
+    bio: user.bio ?? '',
+    github: user.github ?? '',
     linkedin: user.linkedin ?? '',
-    website:  user.website  ?? '',
-    avatar:   user.avatar   ?? '',
+    website: user.website ?? '',
+    avatar: user.avatar ?? '',
   })
   const [avatarFile, setAvatarFile] = useState(null)      // ✅ raw file, not uploaded yet
   const [previewUrl, setPreviewUrl] = useState(user.avatar ?? null)  // ✅ local preview
-  const [saving,   setSaving]   = useState(false)
+  const [saving, setSaving] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const fileInputRef = useRef(null)
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -318,15 +319,15 @@ const EditModal = ({ user, onClose, onSave }) => {
   const handleSave = async () => {
     setSaving(true)
     try {
-       let finalForm = { ...form }
+      let finalForm = { ...form }
 
-    if (avatarFile) {
-      const { avatarUrl } = await uploadProfileAvatar(avatarFile)
-      finalForm.avatar = avatarUrl          // ✅ this sets it locally
-    }
+      if (avatarFile) {
+        const { avatarUrl } = await uploadProfileAvatar(avatarFile)
+        finalForm.avatar = avatarUrl          // ✅ this sets it locally
+      }
 
-    await onSave(finalForm)                 // → calls updateProfile(finalForm)
-    onClose()
+      await onSave(finalForm)                 // → calls updateProfile(finalForm)
+      onClose()
     } catch (e) {
       console.error(e)
     } finally {
@@ -372,9 +373,9 @@ const EditModal = ({ user, onClose, onSave }) => {
               ) : (
                 <>
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="1.5">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
                   <span className="text-[12px] text-[#6b6b6b]">Drop image here or <span className="text-[#ffa116]">browse</span></span>
                   <span className="text-[10px] text-[#4b4b4b]">PNG, JPG, WEBP up to 5MB</span>
@@ -392,10 +393,10 @@ const EditModal = ({ user, onClose, onSave }) => {
 
           {/* Text fields */}
           {[
-            { label: 'Display Name', key: 'name',     placeholder: 'Your name' },
-            { label: 'GitHub',       key: 'github',   placeholder: 'github.com/username' },
-            { label: 'LinkedIn',     key: 'linkedin', placeholder: 'linkedin.com/in/username' },
-            { label: 'Website',      key: 'website',  placeholder: 'https://yoursite.com' },
+            { label: 'Display Name', key: 'name', placeholder: 'Your name' },
+            { label: 'GitHub', key: 'github', placeholder: 'github.com/username' },
+            { label: 'LinkedIn', key: 'linkedin', placeholder: 'linkedin.com/in/username' },
+            { label: 'Website', key: 'website', placeholder: 'https://yoursite.com' },
           ].map(({ label, key, placeholder }) => (
             <div key={key} className="flex flex-col gap-1">
               <label className="text-[11px] text-[#6b6b6b] uppercase tracking-wider">{label}</label>
@@ -441,18 +442,18 @@ const EditModal = ({ user, onClose, onSave }) => {
 
 const ProfilePage = () => {
   const { userId } = useParams()
-  const navigate   = useNavigate()
-  const { currentUser , updateCurrentUser } =  useAuth()
-  
+  const navigate = useNavigate()
+  const { currentUser, updateCurrentUser } = useAuth()
 
-  const [data, setData]       = useState(null)
+
+  const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(null)
+  const [error, setError] = useState(null)
   const [editing, setEditing] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
 
-  const targetId  = userId ?? currentUser?.id
+  const targetId = userId ?? currentUser?.id
   const isOwnProfile = currentUser?.id === targetId
 
   useEffect(() => {
@@ -465,17 +466,17 @@ const ProfilePage = () => {
   }, [targetId])
 
   const handleSave = async (form) => {
-  const res = await updateProfile(form)    // PATCH sends avatar in body ✅
-  setData(d => ({ ...d, user: res.user }))
-  updateCurrentUser(res.user)              // ← but does res.user include avatar?
-}
+    const res = await updateProfile(form)    // PATCH sends avatar in body ✅
+    setData(d => ({ ...d, user: res.user }))
+    updateCurrentUser(res.user)              // ← but does res.user include avatar?
+  }
 
   useEffect(() => {
-  if (searchParams.get('edit') === 'true') {
-    setEditing(true)
-    setSearchParams({}) // clean the URL
-  }
-}, [searchParams])
+    if (searchParams.get('edit') === 'true') {
+      setEditing(true)
+      setSearchParams({}) // clean the URL
+    }
+  }, [searchParams])
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) return (
@@ -564,21 +565,21 @@ const ProfilePage = () => {
             {user.github && (
               <a href={`https://${user.github.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer"
                 className="flex items-center gap-2 text-[12px] text-[#6b6b6b] hover:text-[#e8e8e8] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
                 {user.github.replace(/^https?:\/\/(www\.)?github\.com\//, '')}
               </a>
             )}
             {user.linkedin && (
               <a href={`https://${user.linkedin.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer"
                 className="flex items-center gap-2 text-[12px] text-[#6b6b6b] hover:text-[#e8e8e8] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
                 LinkedIn
               </a>
             )}
             {user.website && (
               <a href={user.website} target="_blank" rel="noreferrer"
                 className="flex items-center gap-2 text-[12px] text-[#6b6b6b] hover:text-[#e8e8e8] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" /></svg>
                 Website
               </a>
             )}
@@ -588,7 +589,11 @@ const ProfilePage = () => {
           <div className="text-[11px] text-[#4b4b4b] text-center pt-1 border-t border-[#2a2a2a]">
             Member since {formatDate(user.createdAt)}
           </div>
+          {isOwnProfile && currentUser?.role !== 'ADMIN' && (
+            <ProblemSetterRequest userId={currentUser.id} />
+          )}
         </div>
+
 
         {/* ── Main content ── */}
         <div className="flex-1 flex flex-col gap-5 min-w-0">
@@ -603,9 +608,9 @@ const ProfilePage = () => {
               {/* Difficulty breakdown */}
               <div className="flex flex-col gap-3 flex-1">
                 {[
-                  { label: 'Easy',   data: easy,   color: '#00b8a3' },
+                  { label: 'Easy', data: easy, color: '#00b8a3' },
                   { label: 'Medium', data: medium, color: '#ffc01e' },
-                  { label: 'Hard',   data: hard,   color: '#ff375f' },
+                  { label: 'Hard', data: hard, color: '#ff375f' },
                 ].map(({ label, data: d, color }) => (
                   <div key={label} className="flex items-center gap-3">
                     <span className="text-[12px] w-[46px]" style={{ color }}>{label}</span>
@@ -629,7 +634,7 @@ const ProfilePage = () => {
               <div className="flex flex-col gap-3 border-l border-[#2a2a2a] pl-6">
                 {[
                   { label: 'Total Submissions', value: stats.totalSubmissions },
-                  { label: 'Acceptance Rate',   value: `${stats.acceptanceRate}%` },
+                  { label: 'Acceptance Rate', value: `${stats.acceptanceRate}%` },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex flex-col gap-0.5">
                     <span className="text-[20px] font-bold text-[#e8e8e8] leading-none">{value}</span>
@@ -666,7 +671,7 @@ const ProfilePage = () => {
                   >
                     {/* Checkmark */}
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00b8a3" strokeWidth="2.5">
-                      <polyline points="20 6 9 17 4 12"/>
+                      <polyline points="20 6 9 17 4 12" />
                     </svg>
 
                     {/* Title */}
