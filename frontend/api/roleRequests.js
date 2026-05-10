@@ -31,3 +31,10 @@ export const reviewRoleRequest = async (id, action) => {
   if (!res.ok) throw new Error(data.error ?? 'Failed to review')
   return data
 }
+
+export const getMyRoleRequestStatus = async () => {
+  const res = await fetch(`${BASE}/role-requests/my-status`, { credentials: 'include' })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error ?? 'Failed to fetch')
+  return data.request // null | { status, createdAt, updatedAt }
+}

@@ -100,3 +100,16 @@ export const reviewRoleRequest = async (req, res) => {
     res.status(500).json({ error: 'Failed to review request' })
   }
 }
+
+export const getMyRoleRequest = async (req, res) => {
+  try {
+    const request = await prisma.roleRequest.findUnique({
+      where: { userId: req.user.id },
+      select: { status: true, createdAt: true, updatedAt: true }
+    })
+    res.status(200).json({ success: true, request }) // null if never applied
+  } catch (error) {
+    console.error('Error fetching role request status', error)
+    res.status(500).json({ error: 'Failed to fetch status' })
+  }
+}
