@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {authenticate , checkAdmin} from "../middleware/auth.middleware.js"
-import { createProblem, deleteProblem, getAllProblems, getProblem, runCode, submitCode, updateProblem } from "../controllers/problems.controller.js";
+import { createProblem, deleteProblem, getAllProblems, getMyProblems, getProblem, runCode, submitCode, updateProblem } from "../controllers/problems.controller.js";
 
 const problemRoutes = Router();
 
@@ -11,5 +11,6 @@ problemRoutes.post("/run-code", authenticate, runCode)
 problemRoutes.post("/submit-code", authenticate, submitCode)
 problemRoutes.patch('/:id', authenticate, checkAdmin, updateProblem)
 problemRoutes.delete('/:id', authenticate, checkAdmin, deleteProblem)
+problemRoutes.get("/my-problems", authenticate, getMyProblems)
 
 export default problemRoutes;

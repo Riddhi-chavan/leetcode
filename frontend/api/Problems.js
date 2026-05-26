@@ -91,3 +91,14 @@ export const submitCode = async ({ source_code, language, problem_id }) => {
     if (!response.ok) throw new Error(data.error || 'Failed to submit code');
     return data;
 };
+
+export const getMyProblems = async () => {
+    const response = await fetch(`${BASE_URL}/problems/my-problems`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to fetch problems');
+    return data.problems;
+};

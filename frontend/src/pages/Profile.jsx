@@ -16,8 +16,8 @@ const DIFF_BG = {
 const toTitle = (s) => s.charAt(0) + s.slice(1).toLowerCase()
 
 const LANG_LABEL = {
-  javascript: 'JS', python3: 'Py3', python: 'Py',
-  cpp: 'C++', java: 'Java', typescript: 'TS', c: 'C', go: 'Go', rust: 'Rs',
+  javascript: 'JS', python: 'Py',
+   java: 'Java', typescript: 'TS', c: 'C', go: 'Go', rust: 'Rs',
 }
 const ll = (l) => LANG_LABEL[l?.toLowerCase()] ?? l
 

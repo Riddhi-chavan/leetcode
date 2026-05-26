@@ -1,23 +1,11 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-
-// ── API call ──────────────────────────────────────────────────────────────────
-const createProblem = async (payload) => {
-  const res = await fetch('/api/problems', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(payload),
-  })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error ?? 'Failed to create problem')
-  return data
-}
+import { createProblem } from "../../../api/Problems"
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD']
-const LANGUAGES = ['javascript', 'python3', 'cpp', 'java']
+const LANGUAGES = ['javascript', 'python', 'java']
 const ALL_TAGS = [
   'Array', 'String', 'Hash Table', 'Dynamic Programming', 'Math',
   'Sorting', 'Greedy', 'Tree', 'Graph', 'Binary Search', 'Stack',
@@ -120,8 +108,7 @@ const CreateProblem = () => {
 
   const [codeSnippets, setCodeSnippets] = useState({
     javascript: '/**\n * @param {number[]} nums\n * @return {number}\n */\nvar solve = function(nums) {\n    \n};',
-    python3: 'class Solution:\n    def solve(self, nums: List[int]) -> int:\n        pass',
-    cpp: 'class Solution {\npublic:\n    int solve(vector<int>& nums) {\n        \n    }\n};',
+    python: 'class Solution:\n    def solve(self, nums: List[int]) -> int:\n        pass',
     java: 'class Solution {\n    public int solve(int[] nums) {\n        \n    }\n}',
   })
 
@@ -441,7 +428,7 @@ const CreateProblem = () => {
                   : 'text-[#6b6b6b] border-transparent hover:text-[#e8e8e8]'
               }`}
             >
-              {lang === 'python3' ? 'Python3' : lang === 'cpp' ? 'C++' : lang.charAt(0).toUpperCase() + lang.slice(1)}
+              {lang === 'python' ? 'Python' : lang.charAt(0).toUpperCase() + lang.slice(1)}
             </button>
           ))}
         </div>
@@ -467,7 +454,7 @@ const CreateProblem = () => {
                   : 'text-[#6b6b6b] border-transparent hover:text-[#e8e8e8]'
               }`}
             >
-              {lang === 'python3' ? 'Python3' : lang === 'cpp' ? 'C++' : lang.charAt(0).toUpperCase() + lang.slice(1)}
+              {lang === 'python' ? 'Python' : lang.charAt(0).toUpperCase() + lang.slice(1)}
               {referenceSolutions[lang]?.trim() && (
                 <span className="ml-1 w-1.5 h-1.5 rounded-full bg-[#00b8a3] inline-block" />
               )}

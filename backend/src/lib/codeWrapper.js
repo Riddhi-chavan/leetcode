@@ -1,10 +1,10 @@
 export const wrapCode = (language, userCode, input) => {
-  if (language === 'javascript') {
-    // Extract function name from user's code
-    const match = userCode.match(/function\s+(\w+)\s*\(/)
-    const fnName = match ? match[1] : null
+  const lang = language.toLowerCase()
 
-    if (!fnName) throw new Error('No function found in your code')
+  if (lang === 'javascript') {
+    const match = userCode.match(/(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=\s*(?:function|\())/)
+    const fnName = match ? (match[1] || match[2]) : null
+    if (!fnName) throw new Error('No function found in JavaScript code')
 
     return `
 ${userCode}
@@ -15,30 +15,54 @@ console.log(JSON.stringify(_result));
     `.trim()
   }
 
-  if (language === 'python') {
+  if (lang === 'python') {
+    const match = userCode.match(/def\s+(\w+)\s*\(/)
+    const fnName = match ? match[1] : null
+    if (!fnName) throw new Error('No function found in Python code')
+
+    const argsJson = JSON.stringify(Object.values(input))
+
     return `
+import json
+
 ${userCode}
 
-import json, ast, sys
-
-_src = '''${userCode.replace(/'/g, "\\'")}'''
-_tree = ast.parse(_src)
-_fn_name = next((n.name for n in ast.walk(_tree) if isinstance(n, ast.FunctionDef)), None)
-
-if not _fn_name:
-    sys.exit("No function found")
-
-_input = ${JSON.stringify(input)}
-_args = list(_input.values())
-_result = locals()[_fn_name](*_args)
+_args = json.loads('${argsJson.replace(/'/g, "\\'")}')
+_result = ${fnName}(*_args)
 print(json.dumps(_result))
     `.trim()
   }
 
-  if (language === 'java') {
-    // Java needs a different approach — return as-is for now
-    // Judge0 handles Java differently (needs a class with main)
-    return userCode
+  if (lang === 'java') {
+    const match = userCode.match(/public\s+\w[\w<>\[\]]*\s+(\w+)\s*\(/)
+    const fnName = match ? match[1] : null
+    if (!fnName) throw new Error('No method found in Java code')
+
+    const args = Object.values(input)
+
+    // Convert each arg to valid Java syntax
+    const javaArgs = args.map(arg => {
+      if (Array.isArray(arg)) {
+        return `new int[]{${arg.join(', ')}}`
+      }
+      if (typeof arg === 'boolean') return arg.toString()
+      if (typeof arg === 'string') return `"${arg}"`
+      return arg
+    })
+
+    return `
+import java.util.*;
+
+${userCode}
+
+class Main {
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        Object result = sol.${fnName}(${javaArgs.join(', ')});
+        System.out.println(result.toString().toLowerCase());
+    }
+}
+    `.trim()
   }
 
   return userCode

@@ -3,13 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { getRoleRequests, reviewRoleRequest } from '../../../api/roleRequests'
 import RequestsTab from './RequestsTab'
+import { getMyProblems } from '../../../api/Problems'
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 const fetchProblems = async () => {
-  const res = await fetch('/api/problems', { credentials: 'include' })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error ?? 'Failed to fetch')
-  return data.problems
+  return await getMyProblems()
 }
 
 const deleteProblem = async (id) => {
